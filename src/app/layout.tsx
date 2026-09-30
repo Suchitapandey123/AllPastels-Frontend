@@ -79,9 +79,26 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
-      className={`${fraunces.variable} ${jost.variable} h-full antialiased`}
-    >
+    lang="en"
+    className={`${fraunces.variable} ${jost.variable} h-full antialiased`}
+    // Marks that JavaScript is running, which is what allows the reveal
+    // animations to hide content before animating it in. Without this class
+    // every element stays visible, so a failed or blocked script can never
+    // leave the page blank.
+    suppressHydrationWarning
+  >
+      <head>
+        {/*
+          Runs before first paint, so the hidden reveal state is applied in
+          the same frame the content is laid out — no flash of visible
+          content followed by a snap-back to hidden.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "document.documentElement.classList.add('js-reveal')",
+          }}
+        />
+      </head>
       <body className="flex min-h-full flex-col">
         <StoreProvider>
           {/* Announcements sit above the sticky navbar and scroll away. */}

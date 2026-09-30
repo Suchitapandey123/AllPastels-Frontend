@@ -42,15 +42,17 @@ export function Reveal({
     const node = ref.current;
     if (!node) return;
 
+    const reveal = () => {
+      node.dataset.revealed = "true";
+    };
+
     // Without IntersectionObserver, show the content immediately rather
     // than leaving it permanently invisible.
     if (typeof IntersectionObserver === "undefined") {
-      node.dataset.revealed = "true";
+      reveal();
       return;
     }
 
-    // Already in view on mount (above the fold): reveal without animating
-    // through a frame of hidden content.
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -60,11 +62,27 @@ export function Reveal({
           }
         }
       },
-      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+      // threshold 0 + a small negative bottom margin reveals as soon as any
+      // part of the element enters the viewport. A higher threshold left very
+      // large editorial elements (full-width images, oversized type) stuck at
+      // opacity 0 because 12% of a tall element can sit below the fold.
+      { threshold: 0, rootMargin: "0px 0px -5% 0px" },
     );
 
     observer.observe(node);
-    return () => observer.disconnect();
+
+    // Safety net: if the observer has not fired shortly after mount, reveal
+    // anything that is within the viewport. Content must never be left
+    // permanently invisible because of an animation.
+    const failsafe = window.setTimeout(() => {
+      const rect = node.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) reveal();
+    }, 400);
+
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(failsafe);
+    };
   }, []);
 
   const style: Record<string, string> = {};

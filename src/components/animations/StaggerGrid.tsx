@@ -43,11 +43,25 @@ export function StaggerGrid({ children, step = 90, maxDelay = 700, className }: 
           }
         }
       },
-      { threshold: 0.08, rootMargin: "0px 0px -5% 0px" },
+      { threshold: 0, rootMargin: "0px 0px -5% 0px" },
     );
 
     observer.observe(node);
-    return () => observer.disconnect();
+
+    // Safety net — a grid must never be left permanently invisible because
+    // the observer did not fire (e.g. it mounted inside a horizontally
+    // scrolled rail, off to the side).
+    const failsafe = window.setTimeout(() => {
+      const rect = node.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        node.dataset.revealed = "true";
+      }
+    }, 400);
+
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(failsafe);
+    };
   }, []);
 
   return (

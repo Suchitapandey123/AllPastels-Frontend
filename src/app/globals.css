@@ -7,62 +7,65 @@
    ========================================================================== */
 
 @theme {
-  /* --- Ash Grey: brand primary, used for brand panels & surfaces --------- */
-  --color-ash-50: #f3f6f0;
-  --color-ash-100: #e8ede0;
-  --color-ash-200: #dce3d1;
-  --color-ash-300: #d0dac2;
-  --color-ash-400: #c5d1b3; /* Ash Grey — primary brand section */
-  --color-ash-500: #a0b482;
-  --color-ash-600: #7a9157;
-  --color-ash-700: #51613a;
-  --color-ash-800: #29301d; /* Dark Ash — primary text */
+  /* --- Ash Grey: brand primary ---------------------------------------------
+     Numbering follows the AllPatels brand scale: 100 = darkest, 900 = lightest. */
+  --color-ash-100: #29301d; /* Dark Ash — primary text */
+  --color-ash-200: #51613a;
+  --color-ash-300: #7a9157;
+  --color-ash-400: #a0b482;
+  --color-ash-500: #c5d1b3; /* Ash Grey — primary brand section */
+  --color-ash-600: #d0dac2;
+  --color-ash-700: #dce3d1;
+  --color-ash-800: #e8ede0;
+  --color-ash-900: #f3f6f0;
 
-  /* --- Floral White: the site canvas ------------------------------------- */
-  --color-floral-50: #fffefc;
-  --color-floral-100: #fffcf9;
-  --color-floral-200: #fffbf6;
-  --color-floral-300: #fffaf3;
-  --color-floral-400: #fff8ef; /* Floral White — page background */
-  --color-floral-500: #ffcd8d;
-  --color-floral-600: #ffa32a;
-  --color-floral-700: #c67000;
-  --color-floral-800: #633800;
+  /* --- Floral White: the site canvas -------------------------------------- */
+  --color-floral-100: #633800;
+  --color-floral-200: #c67000;
+  --color-floral-300: #ffa32a;
+  --color-floral-400: #ffcd8d;
+  --color-floral-500: #fff8ef; /* Floral White — page background */
+  --color-floral-600: #fffaf3;
+  --color-floral-700: #fffbf6;
+  --color-floral-800: #fffcf9;
+  --color-floral-900: #fffefc;
 
-  /* --- Cotton Rose: soft highlight --------------------------------------- */
-  --color-cotton-50: #fff3f3;
-  --color-cotton-100: #ffe8e7;
-  --color-cotton-200: #ffdcda;
-  --color-cotton-300: #ffd0ce;
-  --color-cotton-400: #ffc5c2; /* Cotton Rose — soft highlight */
-  --color-cotton-500: #ff7068;
-  --color-cotton-600: #ff1a0e;
-  --color-cotton-700: #b40900;
-  --color-cotton-800: #5a0400;
+  /* --- Cotton Rose: soft highlight ---------------------------------------- */
+  --color-cotton-100: #5a0400;
+  --color-cotton-200: #b40900;
+  --color-cotton-300: #ff1a0e;
+  --color-cotton-400: #ff7068;
+  --color-cotton-500: #ffc5c2; /* Cotton Rose — soft highlight */
+  --color-cotton-600: #ffd0ce;
+  --color-cotton-700: #ffdcda;
+  --color-cotton-800: #ffe8e7;
+  --color-cotton-900: #fff3f3;
 
-  /* --- Powder Blush: secondary accent ------------------------------------ */
-  --color-powder-50: #fdedeb;
-  --color-powder-100: #fadad7;
-  --color-powder-200: #f8c8c3;
-  --color-powder-300: #f6b6af;
-  --color-powder-400: #f3a39a; /* Powder Blush — secondary accent */
-  --color-powder-500: #eb6353;
-  --color-powder-600: #d62c19;
-  --color-powder-700: #8e1d11;
-  --color-powder-800: #470f08;
+  /* --- Powder Blush: secondary accent ------------------------------------- */
+  --color-powder-100: #470f08;
+  --color-powder-200: #8e1d11;
+  --color-powder-300: #d62c19;
+  --color-powder-400: #eb6353;
+  --color-powder-500: #f3a39a; /* Powder Blush — secondary accent */
+  --color-powder-600: #f6b6af;
+  --color-powder-700: #f8c8c3;
+  --color-powder-800: #fadad7;
+  --color-powder-900: #fdedeb;
 
-  /* --- Burnt Peach: primary call to action ------------------------------- */
-  --color-burnt-50: #f8e4dd;
-  --color-burnt-100: #f1cabb;
-  --color-burnt-200: #eaaf99;
-  --color-burnt-300: #e39478;
-  --color-burnt-400: #dc7954; /* Burnt Peach — primary CTA */
-  --color-burnt-500: #cb552a;
-  --color-burnt-600: #98401f;
-  --color-burnt-700: #662a15;
-  --color-burnt-800: #33150a;
+  /* --- Burnt Peach: primary call to action -------------------------------- */
+  --color-burnt-100: #33150a;
+  --color-burnt-200: #662a15;
+  --color-burnt-300: #98401f;
+  --color-burnt-400: #cb552a;
+  --color-burnt-500: #dc7954; /* Burnt Peach — primary CTA */
+  --color-burnt-600: #e39478;
+  --color-burnt-700: #eaaf99;
+  --color-burnt-800: #f1cabb;
+  --color-burnt-900: #f8e4dd;
 
-  /* --- Semantic aliases: the vocabulary components actually speak --------- */
+  /* --- Semantic aliases: the vocabulary components actually speak ---------
+     Components use these, never the raw numbered scale, so the numbering can
+     change without touching a single component. */
   --color-ash: #c5d1b3;
   --color-ink: #29301d;
   --color-canvas: #fff8ef;
@@ -188,12 +191,15 @@
 
 /* ==========================================================================
    Reveal system
-   Components render with data-reveal; JS flips data-revealed to "true" when
-   the element enters the viewport. Transitions live here in CSS so that
-   reduced-motion users simply never see movement.
+   Progressive enhancement: content is VISIBLE by default. Only once the
+   inline bootstrap script in layout.tsx adds `js-reveal` to <html> do these
+   hidden states apply — so if JavaScript fails, is slow, or never runs,
+   nothing on the page is ever invisible.
+
+   The bootstrap runs before paint, so the initial state still looks correct.
    ========================================================================== */
 
-[data-reveal] {
+.js-reveal [data-reveal] {
   opacity: 0;
   transform: translate3d(0, var(--reveal-y, 2rem), 0);
   transition:
@@ -201,23 +207,23 @@
     transform var(--reveal-duration, 900ms) var(--ease-editorial) var(--reveal-delay, 0ms);
 }
 
-[data-reveal="left"] {
+.js-reveal [data-reveal="left"] {
   transform: translate3d(var(--reveal-x, -2.5rem), 0, 0);
 }
 
-[data-reveal="clip"] {
+.js-reveal [data-reveal="clip"] {
   opacity: 1;
   transform: none;
   clip-path: inset(0 0 100% 0);
   transition: clip-path var(--reveal-duration, 1100ms) var(--ease-editorial) var(--reveal-delay, 0ms);
 }
 
-[data-reveal="scale"] {
+.js-reveal [data-reveal="scale"] {
   transform: scale(var(--reveal-scale, 1.08));
   transition: transform 1400ms var(--ease-editorial) var(--reveal-delay, 0ms);
 }
 
-[data-revealed="true"][data-reveal] {
+.js-reveal [data-reveal][data-revealed="true"] {
   opacity: 1;
   transform: none;
   clip-path: inset(0 0 0 0);
@@ -225,7 +231,7 @@
 
 /* Staggering grid: each cell waits for the one before it. Delays are derived
    from --stagger-step so StaggerGrid needs to render no extra DOM. */
-[data-stagger] > * {
+.js-reveal [data-stagger] > * {
   opacity: 0;
   transform: translate3d(0, 2rem, 0);
   transition:
@@ -233,24 +239,24 @@
     transform 850ms var(--ease-editorial) var(--stagger-delay, 0ms);
 }
 
-[data-stagger][data-revealed="true"] > * {
+.js-reveal [data-stagger][data-revealed="true"] > * {
   opacity: 1;
   transform: none;
 }
 
-[data-stagger] > *:nth-child(1) { --stagger-delay: 0ms; }
-[data-stagger] > *:nth-child(2) { --stagger-delay: calc(var(--stagger-step, 90ms) * 1); }
-[data-stagger] > *:nth-child(3) { --stagger-delay: calc(var(--stagger-step, 90ms) * 2); }
-[data-stagger] > *:nth-child(4) { --stagger-delay: calc(var(--stagger-step, 90ms) * 3); }
-[data-stagger] > *:nth-child(5) { --stagger-delay: calc(var(--stagger-step, 90ms) * 4); }
-[data-stagger] > *:nth-child(6) { --stagger-delay: calc(var(--stagger-step, 90ms) * 5); }
-[data-stagger] > *:nth-child(7) { --stagger-delay: calc(var(--stagger-step, 90ms) * 6); }
-[data-stagger] > *:nth-child(8) { --stagger-delay: calc(var(--stagger-step, 90ms) * 7); }
-[data-stagger] > *:nth-child(9) { --stagger-delay: min(calc(var(--stagger-step, 90ms) * 8), var(--stagger-max, 700ms)); }
-[data-stagger] > *:nth-child(10) { --stagger-delay: min(calc(var(--stagger-step, 90ms) * 9), var(--stagger-max, 700ms)); }
-[data-stagger] > *:nth-child(11) { --stagger-delay: min(calc(var(--stagger-step, 90ms) * 10), var(--stagger-max, 700ms)); }
-[data-stagger] > *:nth-child(12) { --stagger-delay: min(calc(var(--stagger-step, 90ms) * 11), var(--stagger-max, 700ms)); }
-[data-stagger] > *:nth-child(n + 13) { --stagger-delay: var(--stagger-max, 700ms); }
+.js-reveal [data-stagger] > *:nth-child(1) { --stagger-delay: 0ms; }
+.js-reveal [data-stagger] > *:nth-child(2) { --stagger-delay: calc(var(--stagger-step, 90ms) * 1); }
+.js-reveal [data-stagger] > *:nth-child(3) { --stagger-delay: calc(var(--stagger-step, 90ms) * 2); }
+.js-reveal [data-stagger] > *:nth-child(4) { --stagger-delay: calc(var(--stagger-step, 90ms) * 3); }
+.js-reveal [data-stagger] > *:nth-child(5) { --stagger-delay: calc(var(--stagger-step, 90ms) * 4); }
+.js-reveal [data-stagger] > *:nth-child(6) { --stagger-delay: calc(var(--stagger-step, 90ms) * 5); }
+.js-reveal [data-stagger] > *:nth-child(7) { --stagger-delay: calc(var(--stagger-step, 90ms) * 6); }
+.js-reveal [data-stagger] > *:nth-child(8) { --stagger-delay: calc(var(--stagger-step, 90ms) * 7); }
+.js-reveal [data-stagger] > *:nth-child(9) { --stagger-delay: min(calc(var(--stagger-step, 90ms) * 8), var(--stagger-max, 700ms)); }
+.js-reveal [data-stagger] > *:nth-child(10) { --stagger-delay: min(calc(var(--stagger-step, 90ms) * 9), var(--stagger-max, 700ms)); }
+.js-reveal [data-stagger] > *:nth-child(11) { --stagger-delay: min(calc(var(--stagger-step, 90ms) * 10), var(--stagger-max, 700ms)); }
+.js-reveal [data-stagger] > *:nth-child(12) { --stagger-delay: min(calc(var(--stagger-step, 90ms) * 11), var(--stagger-max, 700ms)); }
+.js-reveal [data-stagger] > *:nth-child(n + 13) { --stagger-delay: var(--stagger-max, 700ms); }
 
 
 /* ==========================================================================
@@ -373,7 +379,6 @@
     transform: none !important;
     clip-path: none !important;
   }
-
   .ap-skeleton {
     animation: none;
     background-image: none;

@@ -65,7 +65,7 @@ export function Hero() {
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div
           ref={imageRef}
-          className="ap-anim-hero h-[112%] w-full will-change-transform"
+          className="ap-anim-hero relative h-[112%] w-full will-change-transform"
         >
           <Image
             src={slotUrl("hero", { width: 2200, aspect: "landscape" })}
