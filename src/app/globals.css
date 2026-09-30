@@ -8,56 +8,62 @@
 
 @theme {
   /* --- Ash Grey: brand primary ---------------------------------------------
-     Numbering follows the AllPatels brand scale: 100 = darkest, 900 = lightest. */
+     AllPatels brand scale. 100 = darkest, 900 = lightest.
+     `ash-500` is the DEFAULT (Ash Grey) used for brand panels. */
+  --color-ash: #c5d1b3; /* DEFAULT / Ash Grey */
   --color-ash-100: #29301d; /* Dark Ash — primary text */
   --color-ash-200: #51613a;
   --color-ash-300: #7a9157;
   --color-ash-400: #a0b482;
-  --color-ash-500: #c5d1b3; /* Ash Grey — primary brand section */
+  --color-ash-500: #c5d1b3;
   --color-ash-600: #d0dac2;
   --color-ash-700: #dce3d1;
   --color-ash-800: #e8ede0;
   --color-ash-900: #f3f6f0;
 
   /* --- Floral White: the site canvas -------------------------------------- */
+  --color-floral: #fff8ef; /* DEFAULT / Floral White — page background */
   --color-floral-100: #633800;
   --color-floral-200: #c67000;
   --color-floral-300: #ffa32a;
   --color-floral-400: #ffcd8d;
-  --color-floral-500: #fff8ef; /* Floral White — page background */
+  --color-floral-500: #fff8ef;
   --color-floral-600: #fffaf3;
   --color-floral-700: #fffbf6;
   --color-floral-800: #fffcf9;
   --color-floral-900: #fffefc;
 
   /* --- Cotton Rose: soft highlight ---------------------------------------- */
+  --color-cotton: #ffc5c2; /* DEFAULT / Cotton Rose */
   --color-cotton-100: #5a0400;
   --color-cotton-200: #b40900;
   --color-cotton-300: #ff1a0e;
   --color-cotton-400: #ff7068;
-  --color-cotton-500: #ffc5c2; /* Cotton Rose — soft highlight */
+  --color-cotton-500: #ffc5c2;
   --color-cotton-600: #ffd0ce;
   --color-cotton-700: #ffdcda;
   --color-cotton-800: #ffe8e7;
   --color-cotton-900: #fff3f3;
 
   /* --- Powder Blush: secondary accent ------------------------------------- */
+  --color-powder: #f3a39a; /* DEFAULT / Powder Blush */
   --color-powder-100: #470f08;
   --color-powder-200: #8e1d11;
   --color-powder-300: #d62c19;
   --color-powder-400: #eb6353;
-  --color-powder-500: #f3a39a; /* Powder Blush — secondary accent */
+  --color-powder-500: #f3a39a;
   --color-powder-600: #f6b6af;
   --color-powder-700: #f8c8c3;
   --color-powder-800: #fadad7;
   --color-powder-900: #fdedeb;
 
   /* --- Burnt Peach: primary call to action -------------------------------- */
+  --color-burnt: #dc7954; /* DEFAULT / Burnt Peach — primary CTA */
   --color-burnt-100: #33150a;
   --color-burnt-200: #662a15;
   --color-burnt-300: #98401f;
   --color-burnt-400: #cb552a;
-  --color-burnt-500: #dc7954; /* Burnt Peach — primary CTA */
+  --color-burnt-500: #dc7954;
   --color-burnt-600: #e39478;
   --color-burnt-700: #eaaf99;
   --color-burnt-800: #f1cabb;
@@ -66,14 +72,10 @@
   /* --- Semantic aliases: the vocabulary components actually speak ---------
      Components use these, never the raw numbered scale, so the numbering can
      change without touching a single component. */
-  --color-ash: #c5d1b3;
-  --color-ink: #29301d;
-  --color-canvas: #fff8ef;
-  --color-cotton: #ffc5c2;
-  --color-powder: #f3a39a;
-  --color-burnt: #dc7954;
-  --color-line: #dce3d1;
-  --color-surface: #f3f6f0;
+  --color-ink: #29301d; /* Dark Ash — primary text */
+  --color-canvas: #fff8ef; /* Floral White — page background */
+  --color-line: #dce3d1; /* borders */
+  --color-surface: #f3f6f0; /* light cards */
 
   /* --- Motion & shape ----------------------------------------------------- */
   --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
