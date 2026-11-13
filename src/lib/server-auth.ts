@@ -1,4 +1,6 @@
 import { cookies } from "next/headers";
+import type { AuthUser } from "@/types/auth";
+import { API_BASE_URL } from "@/utils/env";
 
 /**
  * Server-side auth plumbing — shared by the Route Handlers under
@@ -10,21 +12,13 @@ import { cookies } from "next/headers";
  * cookie and send the JWT as a Bearer token.
  */
 
-const BACKEND_ORIGIN =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
-
 const TOKEN_COOKIE = "ap_token";
 
 /** Matches the backend's default JWT lifetime (JWT_EXPIRES_IN=7d). */
 const TOKEN_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
 
-export interface BackendAuthUser {
-  id: string;
-  name: string;
-  email: string;
-  isEmailVerified: boolean;
-  createdAt?: string;
-}
+/** Server-side view of a user — same safe subset the UI receives. */
+export type BackendAuthUser = AuthUser;
 
 interface BackendJson {
   success?: unknown;
@@ -60,7 +54,7 @@ export async function backendPost(
   body: unknown,
 ): Promise<{ status: number; body: BackendJson; reachable: boolean } | null> {
   try {
-    const response = await fetch(`${BACKEND_ORIGIN}/api/auth${path}`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth${path}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body ?? {}),
@@ -118,7 +112,7 @@ export async function fetchCurrentUser(): Promise<BackendAuthUser | null> {
   const token = await readSessionToken();
   if (!token) return null;
   try {
-    const response = await fetch(`${BACKEND_ORIGIN}/api/auth/me`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
       method: "GET",
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",

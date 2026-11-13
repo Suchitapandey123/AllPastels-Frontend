@@ -1,5 +1,6 @@
 import { NETWORK_ERROR_MESSAGE } from "@/lib/api-client";
 import { readSessionToken } from "@/lib/server-auth";
+import { API_BASE_URL } from "@/utils/env";
 
 /**
  * Server-side proxy plumbing for the authenticated backend APIs.
@@ -8,9 +9,6 @@ import { readSessionToken } from "@/lib/server-auth";
  * it here and forward it to the backend as a Bearer token, so no token ever
  * reaches client-side JavaScript.
  */
-
-const BACKEND_ORIGIN =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
 type AuthMode = "none" | "optional" | "required";
 
@@ -47,7 +45,7 @@ export async function backendApi(
   if (init.body) headers.set("Content-Type", "application/json");
 
   try {
-    const response = await fetch(`${BACKEND_ORIGIN}/api${path}`, {
+    const response = await fetch(`${API_BASE_URL}/api${path}`, {
       ...init,
       headers,
       cache: "no-store",

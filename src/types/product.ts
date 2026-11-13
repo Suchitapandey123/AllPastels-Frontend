@@ -2,9 +2,9 @@
  * Shared product domain types.
  *
  * `ApiProduct` mirrors the backend product document returned by
- * `http://localhost:5000/api/products`. UI-facing `Product` (in
- * `src/lib/types.ts`) is a richer shape; `src/lib/product-adapter.ts`
- * bridges the two so the storefront keeps working against the real API.
+ * `GET /api/products`. UI-facing `Product` (in `src/lib/types.ts`) is a
+ * richer shape; `src/lib/product-adapter.ts` bridges the two so the
+ * storefront keeps working against the real API.
  */
 
 export interface ApiProduct {

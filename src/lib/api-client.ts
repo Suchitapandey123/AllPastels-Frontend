@@ -4,8 +4,8 @@
  * Every service under `src/api/` funnels through here so request handling
  * (base URL, JSON encoding, network-failure mapping, shape of the
  * `{ ok, ... }` envelope returned by this app's Route Handlers) lives in one
- * place. The base URL points at the AllPastels backend via
- * `NEXT_PUBLIC_API_URL`, falling back to the local backend in development.
+ * place. Backend origins come from the centralized `utils/env.ts` module;
+ * browser services call this app's same-origin Route Handlers.
  *
  * Secrets policy: no JWT, token or password is ever stored client-side —
  * the login JWT lives in an HttpOnly cookie written by the
@@ -13,27 +13,10 @@
  * endpoints instead of the backend directly.
  */
 
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+import type { ApiRouteBody } from "@/types/api";
 
 /** Shorthand for the browser-facing API surface of this app's Route Handlers. */
 export const CLIENT_API_BASE = "/api";
-
-/**
- * Common envelope produced by this app's Route Handlers. Values arrive as
- * `unknown` so callers coerce defensively — a malformed body must degrade
- * into a typed error, never a thrown exception in the UI.
- */
-export interface ApiRouteBody {
-  ok?: unknown;
-  error?: unknown;
-  message?: unknown;
-  verificationRequired?: unknown;
-  emailSent?: unknown;
-  user?: unknown;
-  data?: unknown;
-  unauthorized?: unknown;
-}
 
 /** Generic fallback shown when the message-carrying request cannot ride out. */
 export const NETWORK_ERROR_MESSAGE =

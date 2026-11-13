@@ -15,12 +15,12 @@
  */
 
 import {
-  API_BASE_URL,
   NETWORK_ERROR_MESSAGE,
   apiPostBody,
   apiRequest,
   readRouteBody,
 } from "@/lib/api-client";
+import { API_BASE_URL } from "@/utils/env";
 import type {
   AuthUser,
   ForgotPasswordResult,

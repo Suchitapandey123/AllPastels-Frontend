@@ -1,9 +1,10 @@
 /**
  * Coupons service — storefront-side helpers.
  *
- * The backend has no public coupon-validation endpoint: coupon codes are
- * validated and priced exclusively by the checkout routes when an order is
- * placed. Client code therefore only normalises the code it submits.
+ * Coupon codes are priced authoritatively by the checkout routes when an order
+ * is placed. Checkout may also call the public order-preview endpoint to show
+ * a live discount; its result is only an estimate. Client code here just
+ * normalises the code it submits.
  */
 
 export const COUPON_CODE_MAX_LENGTH = 30;

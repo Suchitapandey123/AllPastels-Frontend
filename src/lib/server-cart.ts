@@ -1,5 +1,6 @@
 import { NETWORK_ERROR_MESSAGE } from "@/lib/api-client";
 import { readSessionToken } from "@/lib/server-auth";
+import { API_BASE_URL } from "@/utils/env";
 
 /**
  * Server-side cart proxy plumbing.
@@ -8,9 +9,6 @@ import { readSessionToken } from "@/lib/server-auth";
  * `ap_token` cookie, and these helpers read it on the server and forward it to
  * the backend as a Bearer token. No token is ever returned to the client.
  */
-
-const BACKEND_ORIGIN =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
 interface BackendCartBody {
   success?: unknown;
@@ -44,7 +42,7 @@ export async function cartBackend(
   if (init.body) headers.set("Content-Type", "application/json");
 
   try {
-    const response = await fetch(`${BACKEND_ORIGIN}/api/cart${path}`, {
+    const response = await fetch(`${API_BASE_URL}/api/cart${path}`, {
       ...init,
       headers,
       cache: "no-store",

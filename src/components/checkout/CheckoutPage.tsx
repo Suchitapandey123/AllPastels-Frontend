@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { placeGuestOrder, placeOrderFromCart } from "@/api";
+import { placeGuestOrder, placeOrderFromCart, previewOrder } from "@/api";
 import { useAuth } from "@/components/store/AuthProvider";
 import { useStore } from "@/components/store/StoreProvider";
 import { Button } from "@/components/ui/Button";
@@ -19,6 +19,7 @@ import { quoteShipping, quoteTax } from "@/lib/checkout-settings";
 import { productImageUrl } from "@/lib/images";
 import { COUPON_CODE_MAX_LENGTH, normalizeCouponCode } from "@/api/coupons/coupons.api";
 import { SITE } from "@/data/site";
+import type { OrderPreview } from "@/types/order";
 import { cn, formatPrice, pluralize } from "@/lib/utils";
 
 function newIdempotencyKey(): string {
@@ -255,11 +256,27 @@ export function CheckoutPage() {
   const [placing, setPlacing] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [couponCode, setCouponCode] = useState("");
+  const [couponPreview, setCouponPreview] = useState<OrderPreview | null>(null);
+  const [couponChecking, setCouponChecking] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const couponRequestRef = useRef(0);
 
   const shippingQuote = quoteShipping(checkoutSettings, cartSubtotal);
   const taxQuote = quoteTax(checkoutSettings, cartSubtotal);
-  const total = cartSubtotal + shippingQuote.shipping + taxQuote.amount;
   const normalizedCoupon = normalizeCouponCode(couponCode);
+  const effectivePreview =
+    normalizedCoupon && couponPreview?.coupon ? couponPreview : null;
+  const appliedCoupon = effectivePreview?.coupon ?? null;
+  const shipping = effectivePreview ? effectivePreview.shipping : shippingQuote.shipping;
+  const shippingFree = effectivePreview ? effectivePreview.shippingFree : shippingQuote.free;
+  const tax = effectivePreview ? effectivePreview.tax : taxQuote.amount;
+  const taxRatePercent = effectivePreview
+    ? effectivePreview.taxRatePercent
+    : taxQuote.ratePercent;
+  const discount = effectivePreview ? effectivePreview.discount : 0;
+  const total = effectivePreview
+    ? effectivePreview.total
+    : cartSubtotal + shippingQuote.shipping + taxQuote.amount;
 
   useEffect(() => {
     if (!session) return;
@@ -272,6 +289,49 @@ export function CheckoutPage() {
     }, 0);
     return () => window.clearTimeout(timer);
   }, [session]);
+
+  // Debounced server-side coupon check so the summary reflects the discount
+  // before the customer submits. Request ids discard stale responses.
+  useEffect(() => {
+    if (!normalizedCoupon) return;
+
+    const requestId = couponRequestRef.current + 1;
+    couponRequestRef.current = requestId;
+
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        setCouponChecking(true);
+        const result = await previewOrder({
+          items: cart.map((line) => ({
+            productId: line.productId,
+            qty: line.quantity,
+            size: line.size,
+          })),
+          couponCode: normalizedCoupon,
+        });
+        if (couponRequestRef.current !== requestId) return;
+
+        setCouponChecking(false);
+        if (!result.ok) {
+          setCouponPreview(null);
+          setCouponError(result.error);
+          return;
+        }
+        setCouponPreview(result.preview);
+        setCouponError(null);
+      })();
+    }, 450);
+
+    return () => window.clearTimeout(timer);
+  }, [normalizedCoupon, cart]);
+
+  const updateCoupon = (value: string) => {
+    setCouponCode(value);
+    couponRequestRef.current += 1;
+    setCouponPreview(null);
+    setCouponError(null);
+    setCouponChecking(normalizeCouponCode(value).length > 0);
+  };
 
   const update = (name: keyof FormValues, value: string) => {
     setValues((current) => ({ ...current, [name]: value }));
@@ -526,16 +586,27 @@ export function CheckoutPage() {
                 name="couponCode"
                 type="text"
                 value={couponCode}
-                onChange={(event) => setCouponCode(event.target.value)}
+                onChange={(event) => updateCoupon(event.target.value)}
                 maxLength={COUPON_CODE_MAX_LENGTH}
                 autoComplete="off"
                 placeholder="Enter a code"
                 className="w-full border border-line bg-floral px-3.5 py-3 text-sm uppercase tracking-[0.08em] text-ink outline-none transition-colors placeholder:normal-case placeholder:tracking-normal placeholder:text-ink/30 hover:border-ash-400 focus:border-burnt"
               />
-              <p className="ap-body mt-2 text-xs text-ink/45">
-                {normalizedCoupon
-                  ? "The discount is validated and applied when you place the order."
-                  : "Have an offer? Enter it here and we will apply it at checkout."}
+              <p
+                role="status"
+                aria-live="polite"
+                className={cn(
+                  "ap-body mt-2 text-xs",
+                  couponError ? "text-burnt-400" : "text-ink/45",
+                )}
+              >
+                {couponChecking
+                  ? "Checking this code\u2026"
+                  : couponError
+                    ? couponError
+                    : appliedCoupon
+                      ? `Code applied \u2014 you save ${formatPrice(appliedCoupon.amount)}.`
+                      : "Have an offer? Enter it here and we will apply it at checkout."}
               </p>
             </div>
 
@@ -550,24 +621,35 @@ export function CheckoutPage() {
                     <span>Coupon discount</span>
                     <span className="ap-eyebrow truncate text-burnt">{normalizedCoupon}</span>
                   </dt>
-                  <dd className="shrink-0 text-right text-xs text-ink/50">Applied on order</dd>
+                  <dd
+                    className={cn(
+                      "shrink-0 text-right tabular-nums",
+                      appliedCoupon ? "text-burnt" : "text-xs text-ink/50",
+                    )}
+                  >
+                    {couponChecking
+                      ? "Checking\u2026"
+                      : appliedCoupon
+                        ? `\u2212${formatPrice(discount)}`
+                        : "\u2014"}
+                  </dd>
                 </div>
               )}
               <div className="flex items-baseline justify-between gap-4">
                 <dt>Shipping</dt>
-                <dd className={shippingQuote.free ? "text-ash-200" : "text-ink"}>
-                  {shippingQuote.free ? "Free" : formatPrice(shippingQuote.shipping)}
+                <dd className={shippingFree ? "text-ash-200" : "text-ink"}>
+                  {shippingFree ? "Free" : formatPrice(shipping)}
                 </dd>
               </div>
-              {taxQuote.ratePercent > 0 && (
+              {taxRatePercent > 0 && (
                 <div className="flex items-baseline justify-between gap-4">
-                  <dt>Tax ({taxQuote.ratePercent}%)</dt>
-                  <dd className="tabular-nums text-ink">{formatPrice(taxQuote.amount)}</dd>
+                  <dt>Tax ({taxRatePercent}%)</dt>
+                  <dd className="tabular-nums text-ink">{formatPrice(tax)}</dd>
                 </div>
               )}
               <div className="mt-2 flex items-baseline justify-between gap-4 border-t border-line pt-4">
                 <dt className="ap-eyebrow text-ink/55">
-                  {normalizedCoupon ? "Estimated total" : "Total"}
+                  {appliedCoupon ? "Total" : "Estimated total"}
                 </dt>
                 <dd className="font-display text-2xl leading-none tabular-nums text-ink">
                   {formatPrice(total)}

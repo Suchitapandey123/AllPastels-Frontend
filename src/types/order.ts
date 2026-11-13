@@ -110,3 +110,20 @@ export interface LookupOrderInput {
   orderNumber: string;
   email: string;
 }
+
+/** Server-priced bag estimate used by the checkout coupon preview. */
+export interface OrderPreview {
+  subtotal: number;
+  discount: number;
+  shipping: number;
+  shippingFree: boolean;
+  taxRatePercent: number;
+  tax: number;
+  total: number;
+  coupon: OrderCoupon | null;
+}
+
+export interface PreviewOrderInput {
+  items: GuestOrderItem[];
+  couponCode?: string;
+}

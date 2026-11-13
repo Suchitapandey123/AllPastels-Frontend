@@ -63,7 +63,7 @@ export function OrderReceipt({
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         {celebrate ? (
           <div className="mx-auto max-w-2xl text-center">
-            <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-line bg-ash-100 text-ink">
+            <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-burnt/30 bg-burnt-900 text-burnt-400">
               <CheckIcon className="h-7 w-7" />
             </span>
             <p className="ap-eyebrow mt-7 flex items-center justify-center gap-3 text-burnt">

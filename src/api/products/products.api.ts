@@ -5,10 +5,8 @@
  * no second client is created here.
  */
 
-import {
-  API_BASE_URL,
-  NETWORK_ERROR_MESSAGE,
-} from "@/lib/api-client";
+import { NETWORK_ERROR_MESSAGE } from "@/lib/api-client";
+import { API_BASE_URL } from "@/utils/env";
 import type {
   ApiProduct,
   ProductApiResponse,

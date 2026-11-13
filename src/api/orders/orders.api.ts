@@ -23,11 +23,13 @@ import type {
   OrderLine,
   OrderPaymentMethod,
   OrderPaymentStatus,
+  OrderPreview,
   OrderShippingAddress,
   OrderStatus,
   OrderStatusEntry,
   PlaceGuestOrderInput,
   PlaceOrderInput,
+  PreviewOrderInput,
 } from "@/types/order";
 
 export type OrdersResult =
@@ -40,6 +42,10 @@ export type PlaceOrderResult =
 
 export type CancelOrderResult =
   | { ok: true; order: OrderDetail }
+  | { ok: false; error: string; status: number; unauthorized?: boolean };
+
+export type PreviewOrderResult =
+  | { ok: true; preview: OrderPreview }
   | { ok: false; error: string; status: number; unauthorized?: boolean };
 
 export type GetOrderResult =
@@ -265,6 +271,76 @@ function coerceOrder(value: unknown): OrderDetail | null {
     paymentStatus: coercePaymentStatus(record.paymentStatus),
     statusHistory: coerceStatusHistory(record.statusHistory),
   };
+}
+
+function coercePreview(value: unknown): OrderPreview | null {
+  if (!value || typeof value !== "object") return null;
+  const record = value as Record<string, unknown>;
+
+  const subtotal = nonNegativeNumber(record.subtotal);
+  const discount = nonNegativeNumber(record.discount);
+  const shipping = nonNegativeNumber(record.shipping);
+  const tax = nonNegativeNumber(record.tax);
+  const total = nonNegativeNumber(record.total);
+  const taxRatePercent = nonNegativeNumber(record.taxRatePercent);
+  if (
+    subtotal === null ||
+    discount === null ||
+    shipping === null ||
+    tax === null ||
+    total === null ||
+    taxRatePercent === null
+  ) {
+    return null;
+  }
+
+  return {
+    subtotal,
+    discount,
+    shipping,
+    shippingFree: record.shippingFree === true || shipping === 0,
+    taxRatePercent,
+    tax,
+    total,
+    coupon: coerceCoupon(record.coupon),
+  };
+}
+
+/**
+ * `POST /api/orders/preview` — prices the bag with an optional coupon without
+ * placing an order. Used by checkout to show the discount before submitting.
+ */
+export async function previewOrder(
+  input: PreviewOrderInput,
+): Promise<PreviewOrderResult> {
+  const response = await apiPostBody("/orders/preview", input);
+  if (!response) {
+    return { ok: false, error: NETWORK_ERROR_MESSAGE, status: 0 };
+  }
+
+  const body = await readRouteBody(response, "Failed to check this coupon.");
+  if (body.ok !== true) {
+    return {
+      ok: false,
+      error:
+        typeof body.error === "string"
+          ? body.error
+          : "Failed to check this coupon.",
+      status: response.status,
+      unauthorized: body.unauthorized === true || response.status === 401,
+    };
+  }
+
+  const preview = coercePreview(body.data);
+  if (!preview) {
+    return {
+      ok: false,
+      error: "The coupon check response was incomplete.",
+      status: response.status,
+    };
+  }
+
+  return { ok: true, preview };
 }
 
 /** `GET /api/orders/mine` — the signed-in customer's order history. */
