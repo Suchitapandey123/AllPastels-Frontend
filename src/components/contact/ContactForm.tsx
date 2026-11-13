@@ -4,11 +4,8 @@ import { useState, type FormEvent } from "react";
 import { CheckIcon } from "@/components/ui/icons";
 
 /**
- * ContactForm — client-validated enquiry form.
- *
- * Validates on submit and reports errors through `aria-describedby` plus
- * `role="alert"`, so failures are announced rather than only shown. Wiring
- * this to a real inbox means replacing `handleSubmit`.
+ * ContactForm — letter on floral paper, only the 5 pastel tokens.
+ * No black: ink replaced with burnt-100 cocoa, actions in burnt peach.
  */
 
 interface FormValues {
@@ -27,26 +24,24 @@ const EMPTY: FormValues = {
   message: "",
 };
 
-const TOPICS = [
-  "Sizing & fit",
-  "An existing order",
-  "Returns & exchanges",
-  "Gifting",
-  "Wholesale & partnerships",
-  "Something else",
+const TOPICS: { label: string; swatch: string }[] = [
+  { label: "Sizing & fit", swatch: "#c5d1b3" },
+  { label: "An existing order", swatch: "#ffa32a" },
+  { label: "Returns & exchanges", swatch: "#ffc5c2" },
+  { label: "Gifting", swatch: "#f3a39a" },
+  { label: "Wholesale", swatch: "#dc7954" },
+  { label: "Something else", swatch: "#ffcd8d" },
 ];
 
 function validate(values: FormValues): Partial<Record<keyof FormValues, string>> {
   const errors: Partial<Record<keyof FormValues, string>> = {};
-
   if (!values.name.trim()) errors.name = "Please tell us your name";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(values.email)) {
     errors.email = "Please enter a valid email address";
   }
   if (values.message.trim().length < 10) {
-    errors.message = "Please add a little more detail so we can help";
+    errors.message = "Add a little more detail so we can help";
   }
-
   return errors;
 }
 
@@ -71,163 +66,200 @@ export function ContactForm() {
     const found = validate(values);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
-
-    // A real integration would post to a support inbox or form endpoint.
     setSent(true);
   };
 
   if (sent) {
     return (
-      <div className="flex flex-col items-start gap-6 bg-ash-400 p-8 sm:p-10">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-floral-400 text-ash-800">
+      <div className="rounded-[16px] bg-ash p-8 sm:p-12">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-burnt text-floral">
           <CheckIcon className="h-6 w-6" />
         </span>
-        <div>
-          <h2 className="text-2xl text-ash-800">Message received</h2>
-          <p className="ap-body mt-3 max-w-md text-ash-800/75">
-            Thank you, {values.name.split(" ")[0]}. We have your note about
-            &ldquo;{values.topic.toLowerCase()}&rdquo; and will reply to{" "}
-            {values.email} within one working day.
-          </p>
-        </div>
+        <h2 className="font-display mt-6 text-[clamp(1.9rem,3.5vw,2.6rem)] leading-[1.05] text-burnt-100">
+          Noted, {values.name.split(" ")[0] || "friend"}. We’ll write back soon.
+        </h2>
+        <p className="mt-4 max-w-[46ch] text-[0.95rem] leading-relaxed text-burnt-100/70">
+          Your note about {values.topic.toLowerCase()} is with the studio. Expect
+          a reply at {values.email} within one working day.
+        </p>
         <button
           type="button"
           onClick={() => {
             setSent(false);
             setValues(EMPTY);
           }}
-          className="ap-eyebrow border border-ash-800/30 px-6 py-3 text-ash-800 transition-colors hover:border-ash-800"
+          className="mt-8 rounded-full border border-burnt-100/25 px-7 py-3 text-[0.85rem] font-medium text-burnt-100 transition-colors duration-300 hover:bg-burnt hover:text-floral"
         >
-          Send another message
+          Write another note
         </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
-      <h2 className="text-xl">Send us a message</h2>
+    <form
+      onSubmit={handleSubmit}
+      noValidate
+      className="relative overflow-hidden rounded-[16px] border border-burnt-100/15 bg-floral-900 p-6 sm:p-10"
+    >
+      {/* pastel selvedge — the fabric cue, theme colours only */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-[6px] opacity-90"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(90deg, #c5d1b3 0 18px, #ffc5c2 18px 36px, #f3a39a 36px 54px, #dc7954 54px 72px)",
+        }}
+      />
 
-      <div className="mt-7 grid gap-5 sm:grid-cols-2">
-        <TextField
-          id="contact-name"
-          label="Your name"
-          value={values.name}
-          error={errors.name}
-          onChange={(value) => update("name", value)}
-          autoComplete="name"
-        />
-        <TextField
-          id="contact-email"
-          label="Email"
-          type="email"
-          value={values.email}
-          error={errors.email}
-          onChange={(value) => update("email", value)}
-          autoComplete="email"
-        />
-        <TextField
-          id="contact-order"
-          label="Order number (optional)"
-          value={values.orderNumber}
-          onChange={(value) => update("orderNumber", value)}
-        />
+      <div className="flex flex-wrap items-end justify-between gap-3 pt-2">
+        <h2 className="font-display text-[clamp(1.6rem,2.6vw,2.1rem)] leading-none text-burnt-100">
+          Your note
+        </h2>
+        <p className="text-[0.82rem] text-burnt-100/50">Takes about a minute</p>
+      </div>
 
+      <fieldset className="mt-6">
+        <legend className="text-[0.85rem] font-medium text-burnt-100/70">
+          What is it about?
+        </legend>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {TOPICS.map((topic) => {
+            const active = values.topic === topic.label;
+            return (
+              <button
+                key={topic.label}
+                type="button"
+                onClick={() => update("topic", topic.label)}
+                aria-pressed={active}
+                className={
+                  active
+                    ? "flex items-center gap-2 rounded-full bg-burnt py-2 pl-2.5 pr-4 text-[0.83rem] font-medium text-floral transition-colors duration-300"
+                    : "flex items-center gap-2 rounded-full border border-burnt-100/20 bg-transparent py-2 pl-2.5 pr-4 text-[0.83rem] text-burnt-100/75 transition-colors duration-300 hover:border-burnt hover:text-burnt-100"
+                }
+              >
+                <span
+                  aria-hidden="true"
+                  className="h-4 w-4 rounded-full border border-burnt-100/15"
+                  style={{ backgroundColor: topic.swatch }}
+                />
+                {topic.label}
+              </button>
+            );
+          })}
+        </div>
+      </fieldset>
+
+      <div className="mt-8 grid gap-7 sm:grid-cols-2">
         <div>
-          <label htmlFor="contact-topic" className="ap-eyebrow mb-2 block text-ink/50">
-            What is this about?
-          </label>
-          <select
-            id="contact-topic"
-            value={values.topic}
-            onChange={(event) => update("topic", event.target.value)}
-            className="w-full cursor-pointer border-b border-line bg-transparent py-3 text-sm text-ink outline-none transition-colors focus:border-burnt"
+          <label
+            htmlFor="contact-name"
+            className="text-[0.85rem] font-medium text-burnt-100/70"
           >
-            {TOPICS.map((topic) => (
-              <option key={topic} value={topic}>
-                {topic}
-              </option>
-            ))}
-          </select>
+            Your name
+          </label>
+          <input
+            id="contact-name"
+            type="text"
+            value={values.name}
+            onChange={(e) => update("name", e.target.value)}
+            autoComplete="name"
+            placeholder="Asha Patel"
+            aria-invalid={Boolean(errors.name)}
+            aria-describedby={errors.name ? "contact-name-error" : undefined}
+            className="mt-1 w-full border-b border-burnt-100/20 bg-transparent py-3 text-[0.95rem] text-burnt-100 outline-none transition-colors placeholder:text-burnt-100/30 focus:border-burnt"
+          />
+          {errors.name && (
+            <p id="contact-name-error" role="alert" className="mt-1.5 text-[0.8rem] text-burnt-400">
+              {errors.name}
+            </p>
+          )}
+        </div>
+        <div>
+          <label
+            htmlFor="contact-email"
+            className="text-[0.85rem] font-medium text-burnt-100/70"
+          >
+            Email where we reply
+          </label>
+          <input
+            id="contact-email"
+            type="email"
+            value={values.email}
+            onChange={(e) => update("email", e.target.value)}
+            autoComplete="email"
+            placeholder="you@example.com"
+            aria-invalid={Boolean(errors.email)}
+            aria-describedby={errors.email ? "contact-email-error" : undefined}
+            className="mt-1 w-full border-b border-burnt-100/20 bg-transparent py-3 text-[0.95rem] text-burnt-100 outline-none transition-colors placeholder:text-burnt-100/30 focus:border-burnt"
+          />
+          {errors.email && (
+            <p id="contact-email-error" role="alert" className="mt-1.5 text-[0.8rem] text-burnt-400">
+              {errors.email}
+            </p>
+          )}
         </div>
       </div>
 
-      <div className="mt-5">
-        <label htmlFor="contact-message" className="ap-eyebrow mb-2 block text-ink/50">
-          Your message
+      <div className="mt-7">
+        <label
+          htmlFor="contact-order"
+          className="text-[0.85rem] font-medium text-burnt-100/70"
+        >
+          Order number <span className="font-normal text-burnt-100/45">(if you have one)</span>
         </label>
+        <input
+          id="contact-order"
+          type="text"
+          value={values.orderNumber}
+          onChange={(e) => update("orderNumber", e.target.value)}
+          placeholder="AP-2481"
+          className="mt-1 w-full border-b border-burnt-100/20 bg-transparent py-3 text-[0.95rem] text-burnt-100 outline-none transition-colors placeholder:text-burnt-100/30 focus:border-burnt sm:max-w-[240px]"
+        />
+      </div>
+
+      <div className="mt-7">
+        <div className="flex items-baseline justify-between gap-4">
+          <label
+            htmlFor="contact-message"
+            className="text-[0.85rem] font-medium text-burnt-100/70"
+          >
+            Your message
+          </label>
+          <span className="text-[0.78rem] text-burnt-100/40">
+            {values.message.trim().length < 10
+              ? "A sentence or two helps"
+              : `${values.message.trim().length} characters`}
+          </span>
+        </div>
         <textarea
           id="contact-message"
           rows={5}
           value={values.message}
-          onChange={(event) => update("message", event.target.value)}
+          onChange={(e) => update("message", e.target.value)}
+          placeholder="Hi — I’m between sizes M and L in linen, usually M on top. What would you suggest for the wrap dress?"
           aria-invalid={Boolean(errors.message)}
           aria-describedby={errors.message ? "contact-message-error" : undefined}
-          className={
-            errors.message
-              ? "w-full border border-burnt bg-transparent p-4 text-sm text-ink outline-none transition-colors"
-              : "w-full border border-line bg-transparent p-4 text-sm text-ink outline-none transition-colors focus:border-burnt"
-          }
+          className="mt-2 w-full rounded-[12px] border border-burnt-100/20 bg-floral p-4 text-[0.95rem] leading-relaxed text-burnt-100 outline-none transition-colors placeholder:text-burnt-100/30 focus:border-burnt"
         />
         {errors.message && (
-          <p id="contact-message-error" role="alert" className="ap-body mt-1.5 text-xs text-burnt">
+          <p id="contact-message-error" role="alert" className="mt-1.5 text-[0.8rem] text-burnt-400">
             {errors.message}
           </p>
         )}
       </div>
 
-      <button
-        type="submit"
-        className="ap-eyebrow mt-7 w-full bg-ash-800 py-4 text-floral-50 transition-colors duration-500 hover:bg-burnt sm:w-auto sm:px-10"
-      >
-        Send message
-      </button>
+      <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
+        <button
+          type="submit"
+          className="rounded-full bg-burnt px-10 py-4 text-[0.9rem] font-medium text-floral transition-colors duration-300 hover:bg-burnt-400"
+        >
+          Send message
+        </button>
+        <p className="text-[0.82rem] leading-relaxed text-burnt-100/50">
+          No newsletters, no sharing. Just a reply.
+        </p>
+      </div>
     </form>
   );
 }
-
-function TextField({
-  id,
-  label,
-  value,
-  onChange,
-  error,
-  type = "text",
-  autoComplete,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  error?: string;
-  type?: string;
-  autoComplete?: string;
-}) {
-  return (
-    <div>
-      <label htmlFor={id} className="ap-eyebrow mb-2 block text-ink/50">
-        {label}
-      </label>
-      <input
-        id={id}
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        autoComplete={autoComplete}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? `${id}-error` : undefined}
-        className={
-          error
-            ? "w-full border-b border-burnt bg-transparent py-3 text-sm text-ink outline-none transition-colors"
-            : "w-full border-b border-line bg-transparent py-3 text-sm text-ink outline-none transition-colors focus:border-burnt"
-        }
-      />
-      {error && (
-        <p id={`${id}-error`} role="alert" className="ap-body mt-1.5 text-xs text-burnt">
-          {error}
-        </p>
-      )}
-    </div>
-  );
-}
-

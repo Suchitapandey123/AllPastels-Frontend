@@ -10,7 +10,7 @@ import { announcements } from "@/data/site";
  */
 export function AnnouncementBar() {
   return (
-    <div className="relative overflow-hidden bg-ash-800 text-floral-400">
+    <div className="ap-announce relative overflow-hidden bg-ash-100 text-floral">
       <div className="ap-anim-marquee flex w-max" role="region" aria-label="Store announcements">
         {[0, 1].map((copy) => (
           <ul
@@ -21,10 +21,10 @@ export function AnnouncementBar() {
             {announcements.map((message) => (
               <li
                 key={message}
-                className="ap-eyebrow flex items-center whitespace-nowrap px-6 py-2.5 text-floral-200/90"
+                className="ap-eyebrow flex items-center whitespace-nowrap px-6 py-2.5 text-floral-700/90"
               >
                 {message}
-                <span aria-hidden="true" className="ml-6 text-cotton-400/70">
+                <span aria-hidden="true" className="ml-6 text-cotton/70">
                   •
                 </span>
               </li>

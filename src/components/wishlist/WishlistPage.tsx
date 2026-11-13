@@ -4,8 +4,10 @@ import { useStore } from "@/components/store/StoreProvider";
 import { Button } from "@/components/ui/Button";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { HeartIcon } from "@/components/ui/icons";
-import { products } from "@/data/products";
+import { loadProducts } from "@/lib/catalog";
+import type { Product } from "@/lib/types";
 import { pluralize } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 /**
  * WishlistPage — saved items.
@@ -16,6 +18,17 @@ import { pluralize } from "@/lib/utils";
  */
 export function WishlistPage() {
   const { wishlist, hydrated } = useStore();
+  const [catalog, setCatalog] = useState<Product[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    loadProducts().then((result) => {
+      if (active && result.ok) setCatalog(result.products);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   if (!hydrated) {
     return (
@@ -26,8 +39,8 @@ export function WishlistPage() {
   }
 
   const saved = wishlist
-    .map((id) => products.find((product) => product.id === id))
-    .filter((product) => product !== undefined);
+    .map((id) => catalog.find((product) => product.id === id))
+    .filter((product): product is Product => product !== undefined);
 
   if (saved.length === 0) {
     return (

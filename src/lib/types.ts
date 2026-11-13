@@ -1,7 +1,7 @@
 import type { ImageSlot, ProductImageSet } from "@/lib/images";
 
 /**
- * Domain types for the AllPatels storefront.
+ * Domain types for the AllPastels storefront.
  *
  * These mirror the shape a real commerce API would return, so swapping the
  * mock data modules for `fetch()` calls later requires no UI changes.
@@ -46,6 +46,17 @@ export interface Product {
   compareAtPrice?: number;
   /** Photo set key from `src/lib/images.ts`. */
   photoSet: ProductImageSet;
+  /** Backend image URLs (preferred over `photoSet` when present). */
+  images?: string[];
+  stock?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  /** SEO overrides from the backend; empty/undefined falls back to defaults. */
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string;
+  /** Alt text for the product's gallery images. */
+  imageAlt?: string;
   colors: ColorOption[];
   sizes: string[];
   /** Short line shown on cards and in search results. */

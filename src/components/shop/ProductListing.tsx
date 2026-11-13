@@ -45,7 +45,7 @@ export function ProductListing({
   return (
     <>
       {/* Page header */}
-      <section className="border-b border-line bg-ash-50">
+      <section className="border-b border-line bg-surface">
         <Container>
           <div className="py-12 sm:py-16 lg:py-20">
             <Reveal variant="up">

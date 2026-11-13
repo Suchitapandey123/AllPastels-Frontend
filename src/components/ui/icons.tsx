@@ -102,10 +102,42 @@ export function ChevronDownIcon(props: IconProps) {
   );
 }
 
+export function ChevronLeftIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M14.5 6l-6 6 6 6" />
+    </Svg>
+  );
+}
+
+export function ChevronRightIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M9.5 6l6 6-6 6" />
+    </Svg>
+  );
+}
+
 export function CheckIcon(props: IconProps) {
   return (
     <Svg {...props}>
       <path d="M4.5 12.5l5 5 10-11" />
+    </Svg>
+  );
+}
+
+export function PlusIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 5.5v13M5.5 12h13" />
+    </Svg>
+  );
+}
+
+export function MinusIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M5.5 12h13" />
     </Svg>
   );
 }
@@ -146,6 +178,60 @@ export function StarIcon({ filled = false, ...props }: IconProps & { filled?: bo
         d="M12 3.5l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.9l6-.8L12 3.5Z"
         fill={filled ? "currentColor" : "none"}
       />
+    </Svg>
+  );
+}
+
+export function GiftIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 11h16v9H4z" />
+      <path d="M3.5 7.5h17V11h-17z" />
+      <path d="M12 7.5V20" />
+      <path d="M12 7.5S10.7 3.5 8.4 3.5a2.1 2.1 0 0 0 0 4.2H12Z" />
+      <path d="M12 7.5s1.3-4 3.6-4a2.1 2.1 0 0 1 0 4.2H12Z" />
+    </Svg>
+  );
+}
+
+/** Small padlock — the session and security rows in the account. */
+export function LockIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="5.5" y="10.5" width="13" height="9" rx="1" />
+      <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" />
+    </Svg>
+  );
+}
+
+/** Payment card — the "Manage cards and Wallets" sidebar row. */
+export function CardIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3.5" y="6" width="17" height="12" rx="1.5" />
+      <path d="M3.5 10h17" />
+      <path d="M7 14.5h4" />
+    </Svg>
+  );
+}
+
+/** Map pin — saved addresses, in the account navigation and address cards. */
+export function MapPinIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 20.5s6.5-5.7 6.5-10.4a6.5 6.5 0 1 0-13 0c0 4.7 6.5 10.4 6.5 10.4Z" />
+      <circle cx="12" cy="10.25" r="2.4" />
+    </Svg>
+  );
+}
+
+/** Sliders — the settings entry in the account navigation. */
+export function SettingsIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 8.5h8M17.5 8.5H20M4 15.5h2.5M12 15.5h8" />
+      <circle cx="14.75" cy="8.5" r="2.25" />
+      <circle cx="9.25" cy="15.5" r="2.25" />
     </Svg>
   );
 }

@@ -3,7 +3,7 @@ import { CheckoutPage } from "@/components/checkout/CheckoutPage";
 
 export const metadata: Metadata = {
   title: "Checkout",
-  description: "Complete your AllPatels order.",
+  description: "Complete your AllPastels order.",
   robots: { index: false, follow: false },
 };
 

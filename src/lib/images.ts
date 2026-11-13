@@ -2,7 +2,7 @@
  * Centralised image registry.
  *
  * Every image used anywhere in the storefront is declared here, so swapping
- * AllPatels' real photography for this placeholder set later means editing
+ * AllPastels' real photography for this placeholder set later means editing
  * a single file. Components never contain a raw URL.
  *
  * Sources are royalty-free Unsplash photographs used as temporary
@@ -138,12 +138,30 @@ export function productImage(
   return images[index % images.length];
 }
 
+export function productImageUrl(
+  product: { images?: string[]; photoSet: ProductImageSet },
+  index = 0,
+  options?: { width?: number; aspect?: AspectKey },
+): string {
+  const images = product.images?.filter(Boolean) ?? [];
+  if (images.length > 0) return images[index % images.length];
+  return productImage(product.photoSet, index, options);
+}
+
+export function productImageUrls(
+  product: { images?: string[]; photoSet: ProductImageSet },
+  options?: { width?: number; aspect?: AspectKey },
+): string[] {
+  const images = product.images?.filter(Boolean) ?? [];
+  if (images.length > 0) return images;
+  return productImages(product.photoSet, options);
+}
 /** Deterministically picks a product photo set, so mock data stays compact. */
 export function photoSet(seed: string): ProductImageSet {
   let hash = 0;
+
   for (let i = 0; i < seed.length; i += 1) {
     hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
   }
   return PRODUCT_SLOTS[hash % PRODUCT_SLOTS.length];
 }
-

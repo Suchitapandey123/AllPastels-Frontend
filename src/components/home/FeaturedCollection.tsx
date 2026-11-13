@@ -23,7 +23,7 @@ export function FeaturedCollection() {
         <Reveal variant="clip" duration={1200} className="order-1 lg:order-2">
           <ParallaxImage
             src={slotUrl(collection.imageSlot, { width: 1200, aspect: "editorial" })}
-            alt={`${collection.title} — the AllPatels seasonal collection`}
+            alt={`${collection.title} — the AllPastels seasonal collection`}
             aspect="editorial"
             strength={28}
             sizes="(max-width: 1024px) 100vw, 50vw"
@@ -34,26 +34,26 @@ export function FeaturedCollection() {
         {/* Copy */}
         <div className="order-2 flex flex-col items-start lg:order-1">
           <Reveal variant="left" distance={32}>
-            <p className="ap-eyebrow mb-5 flex items-center gap-3 text-ash-800/70">
-              <span aria-hidden="true" className="h-px w-8 bg-ash-800/40" />
+            <p className="ap-eyebrow mb-5 flex items-center gap-3 text-ink/70">
+              <span aria-hidden="true" className="h-px w-8 bg-ash-100/40" />
               Featured collection
             </p>
           </Reveal>
 
           <Reveal variant="left" distance={32} delay={110}>
-            <h2 className="text-[clamp(2.5rem,6vw,4.5rem)] leading-[0.95] text-ash-800">
+            <h2 className="text-[clamp(2.5rem,6vw,4.5rem)] leading-[0.95] text-ink">
               The new edit
             </h2>
           </Reveal>
 
           <Reveal variant="left" distance={32} delay={220}>
-            <p className="ap-body mt-6 max-w-md text-lg text-ash-800/75">
+            <p className="ap-body mt-6 max-w-md text-lg text-ink/75">
               Soft silhouettes. Warm tones. Effortless details.
             </p>
           </Reveal>
 
           <Reveal variant="left" distance={32} delay={320}>
-            <p className="ap-body mt-5 max-w-md text-ash-800/70">
+            <p className="ap-body mt-5 max-w-md text-ink/70">
               {collection.description}
             </p>
           </Reveal>

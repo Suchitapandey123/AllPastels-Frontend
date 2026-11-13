@@ -3,6 +3,10 @@ import { Fraunces, Jost } from "next/font/google";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
+import { SurpriseOffer } from "@/components/layout/SurpriseOffer";
+import { CartDrawer } from "@/components/cart/CartDrawer";
+import { CartDrawerProvider } from "@/components/store/CartDrawerProvider";
+import { AuthProvider } from "@/components/store/AuthProvider";
 import { StoreProvider } from "@/components/store/StoreProvider";
 import { SITE } from "@/data/site";
 import "./globals.css";
@@ -38,7 +42,7 @@ export const metadata: Metadata = {
   description: SITE.description,
   applicationName: SITE.name,
   keywords: [
-    "AllPatels",
+    "AllPastels",
     "modern fashion",
     "everyday clothing",
     "linen",
@@ -100,12 +104,30 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="flex min-h-full flex-col">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:bg-floral focus:px-4 focus:py-2 focus:text-ink"
+        >
+          Skip to main content
+        </a>
         <StoreProvider>
-          {/* Announcements sit above the sticky navbar and scroll away. */}
-          <AnnouncementBar />
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          {/* Session state sits in its own provider so the navbar, menu and
+              account screens can read it without touching commerce data. */}
+          <AuthProvider>
+            {/* The bag panel's open flag lives in its own tiny provider, so the
+                commerce store stays purely data and the Navbar can raise the
+                panel without prop-drilling through the tree. */}
+            <CartDrawerProvider>
+              {/* Announcements sit above the sticky navbar and scroll away. */}
+              <AnnouncementBar />
+              <Navbar />
+              <main id="main-content" className="flex-1">{children}</main>
+              <Footer />
+              <CartDrawer />
+              {/* First-visit welcome coupon — remembered once it has been seen. */}
+              <SurpriseOffer />
+            </CartDrawerProvider>
+          </AuthProvider>
         </StoreProvider>
       </body>
     </html>

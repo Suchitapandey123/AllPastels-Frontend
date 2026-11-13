@@ -14,17 +14,17 @@ import { slotUrl } from "@/lib/images";
 
 export function BrandStory() {
   return (
-    <section className="relative overflow-hidden bg-ash-400 py-20 sm:py-28 lg:py-40">
+    <section className="relative overflow-hidden bg-ash py-20 sm:py-28 lg:py-36">
       <Container>
         <Reveal variant="up" duration={1100}>
-          <p className="ap-eyebrow mb-8 flex items-center gap-3 text-ash-800/70">
-            <span aria-hidden="true" className="h-px w-10 bg-ash-800/40" />
-            Why AllPatels
+          <p className="ap-eyebrow mb-8 flex items-center gap-3 text-ink/70">
+            <span aria-hidden="true" className="h-px w-10 bg-ash-100/40" />
+            Why AllPastels
           </p>
         </Reveal>
 
         <Reveal variant="up" delay={120} duration={1200}>
-          <h2 className="max-w-6xl text-[clamp(2.5rem,9vw,7.5rem)] font-normal leading-[0.9] tracking-[-0.035em] text-ash-800">
+          <h2 className="max-w-6xl text-[clamp(2.5rem,9vw,7.5rem)] font-normal leading-[0.9] tracking-[-0.035em] text-ink">
             More than what you wear.
           </h2>
         </Reveal>
@@ -33,7 +33,7 @@ export function BrandStory() {
         <Reveal variant="clip" duration={1300} delay={180} className="mt-14 sm:mt-20">
           <ParallaxImage
             src={slotUrl("brandStory", { width: 2000, aspect: "wide" })}
-            alt="Inside the AllPatels studio"
+            alt="Inside the AllPastels studio"
             aspect="wide"
             strength={40}
             sizes="100vw"
@@ -42,16 +42,16 @@ export function BrandStory() {
 
         <div className="mt-14 grid gap-10 sm:mt-20 lg:grid-cols-12 lg:gap-8">
           <Reveal variant="up" delay={120} className="lg:col-span-5">
-            <p className="font-display text-[1.5rem] leading-[1.35] text-ash-800 sm:text-[1.75rem]">
+            <p className="font-display text-[1.5rem] leading-[1.35] text-ink sm:text-[1.75rem]">
               We believe clothing should earn its place in your life — not the other
               way around.
             </p>
           </Reveal>
 
           <Reveal variant="up" delay={220} className="lg:col-span-5 lg:col-start-8">
-            <div className="ap-body space-y-4 text-ash-800/75">
+            <div className="ap-body space-y-4 text-ink/75">
               <p>
-                AllPatels began with a simple frustration: beautiful clothes that
+                AllPastels began with a simple frustration: beautiful clothes that
                 lasted one season. So we started at the other end — choosing fabrics
                 first, building small runs, and designing pieces that get better
                 the longer you wear them.

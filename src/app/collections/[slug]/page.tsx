@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { collections } from "@/data/collections";
-import { getProductBySlug } from "@/lib/catalog";
+import { loadProducts, getProductBySlug } from "@/lib/catalog";
 import { slotUrl } from "@/lib/images";
 import { pluralize } from "@/lib/utils";
 
@@ -36,34 +36,37 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
 
   if (!collection) notFound();
 
-  const products = collection.productSlugs
-    .map((productSlug) => getProductBySlug(productSlug))
-    .filter((product) => product !== undefined);
+  const result = await loadProducts();
+  const products = result.ok
+    ? collection.productSlugs
+        .map((productSlug) => getProductBySlug(result.products, productSlug))
+        .filter((product): product is NonNullable<typeof product> => product !== undefined)
+    : [];
 
   return (
     <>
       {/* Editorial header */}
-      <section className="bg-ash-400">
+      <section className="bg-ash">
         <Container className="py-14 sm:py-20">
           <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
             <div>
-              <p className="ap-eyebrow mb-4 flex items-center gap-3 text-ash-800/70">
-                <span aria-hidden="true" className="h-px w-8 bg-ash-800/40" />
+              <p className="ap-eyebrow mb-4 flex items-center gap-3 text-ink/70">
+                <span aria-hidden="true" className="h-px w-8 bg-ash-100/40" />
                 Collection
               </p>
-              <h1 className="text-[clamp(2.5rem,5.5vw,4.5rem)] text-ash-800">
+              <h1 className="text-[clamp(2.5rem,5.5vw,4.5rem)] text-ink">
                 {collection.title}
               </h1>
-              <p className="ap-body mt-5 max-w-lg text-lg text-ash-800/75">
+              <p className="ap-body mt-5 max-w-lg text-lg text-ink/75">
                 {collection.tagline}
               </p>
-              <p className="ap-body mt-4 max-w-lg text-ash-800/70">{collection.description}</p>
+              <p className="ap-body mt-4 max-w-lg text-ink/70">{collection.description}</p>
 
               <div className="mt-9 flex flex-wrap items-center gap-4">
                 <Button href="#pieces" variant="primary" size="md" withArrow>
                   Shop the edit
                 </Button>
-                <span className="ap-eyebrow text-ash-800/55">
+                <span className="ap-eyebrow text-ink/55">
                   {pluralize(products.length, "piece")}
                 </span>
               </div>
@@ -71,7 +74,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
 
             <ParallaxImage
               src={slotUrl(collection.imageSlot, { width: 1200, aspect: "portrait" })}
-              alt={`${collection.title} — AllPatels collection`}
+              alt={`${collection.title} — AllPastels collection`}
               aspect="portrait"
               strength={26}
               sizes="(max-width: 1024px) 100vw, 50vw"

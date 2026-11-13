@@ -5,14 +5,13 @@ import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { ArrowRightIcon } from "@/components/ui/icons";
 import { collections } from "@/data/collections";
-import { getProductBySlug } from "@/lib/catalog";
 import { slotUrl } from "@/lib/images";
 import { pluralize } from "@/lib/utils";
 
 export const metadata = {
   title: "Collections",
   description:
-    "Explore the AllPatels collections — curated edits built around a fabric, a season or an occasion.",
+    "Explore the AllPastels collections — curated edits built around a fabric, a season or an occasion.",
 };
 
 /**
@@ -25,7 +24,7 @@ export const metadata = {
 export default function CollectionsPage() {
   return (
     <>
-      <section className="border-b border-line bg-ash-50">
+      <section className="border-b border-line bg-surface">
         <Container>
           <div className="py-12 sm:py-16 lg:py-20">
             <Reveal variant="up">
@@ -46,9 +45,7 @@ export default function CollectionsPage() {
       <Container className="py-14 sm:py-20">
         <div className="grid gap-8 md:grid-cols-2 lg:gap-x-10 lg:gap-y-16">
           {collections.map((collection, index) => {
-            const pieces = collection.productSlugs
-              .map((slug) => getProductBySlug(slug))
-              .filter((product) => product !== undefined);
+const pieces: never[] = [];
 
             const lead = pieces[0];
 
@@ -56,7 +53,7 @@ export default function CollectionsPage() {
               <Reveal key={collection.slug} variant="up" delay={(index % 2) * 120}>
                 <article className="group">
                   <Link href={collection.href} className="block">
-                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-ash-100">
+                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-ash-800">
                       <Image
                         src={slotUrl(collection.imageSlot, {
                           width: 1100,
@@ -67,13 +64,13 @@ export default function CollectionsPage() {
                         sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-cover transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-ash-800/80 via-ash-800/20 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-ash-100/80 via-ash-100/20 to-transparent" />
 
                       <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-                        <h2 className="text-[clamp(1.75rem,3vw,2.5rem)] text-floral-400">
+                        <h2 className="text-[clamp(1.75rem,3vw,2.5rem)] text-floral">
                           {collection.title}
                         </h2>
-                        <p className="ap-body mt-2 max-w-sm text-sm text-floral-200/85">
+                        <p className="ap-body mt-2 max-w-sm text-sm text-floral-700/85">
                           {collection.tagline}
                         </p>
                       </div>

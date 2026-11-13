@@ -1,5 +1,5 @@
 import { ProductListing } from "@/components/shop/ProductListing";
-import { getAllProducts, queryProducts } from "@/lib/catalog";
+import { loadProducts, queryProducts } from "@/lib/catalog";
 import { buildFilterState } from "@/lib/search-params";
 import type { CategoryId } from "@/lib/types";
 
@@ -18,9 +18,18 @@ export function createCategoryPage(category: CategoryId) {
     searchParams: Promise<Record<string, string | string[] | undefined>>;
   }) {
     const params = await searchParams;
+    const result = await loadProducts();
+    if (!result.ok) {
+      return (
+        <div className="mx-auto max-w-xl px-6 py-24 text-center">
+          <p className="text-lg text-ink/70">{result.error}</p>
+          <a href="" className="mt-6 inline-block text-burnt underline">Try again</a>
+        </div>
+      );
+    }
 
     const products = queryProducts(
-      getAllProducts(),
+      result.products,
       // `categories` is overridden rather than merged, so the page always
       // shows its own category and only its own.
       buildFilterState(params, { categories: [category] }),

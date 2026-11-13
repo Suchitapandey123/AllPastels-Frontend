@@ -1,145 +1,124 @@
-"use client";
-
-import Image from "next/image";
-import { useEffect, useRef } from "react";
+import Link from "next/link";
+import { ParallaxImage } from "@/components/animations/ParallaxImage";
+import { Reveal } from "@/components/animations/Reveal";
 import { Button } from "@/components/ui/Button";
+import { Container } from "@/components/ui/Container";
+import { ArrowRightIcon } from "@/components/ui/icons";
 import { slotUrl } from "@/lib/images";
-import { useReducedMotion } from "@/lib/useReducedMotion";
 
 /**
- * Hero — the cinematic opening frame of the homepage.
+ * Hero — the opening band of the homepage.
  *
- * Deliberately not a carousel. A single full-bleed fashion image, one
- * editorial headline and two calls to action. The sequence is:
+ * A split composition rather than a full-bleed carousel: the words lead on
+ * the left, the photograph carries the right. This keeps the brand's
+ * editorial voice (AllPastels) while giving the merchandising the page needs —
+ * a floating "350+ styles" caption and a round "New in" badge echo the
+ * category-first shopping behaviour of modern commerce homepages, without
+ * turning the hero into a banner grid.
  *
- *   1. the photograph settles from a slight zoom
- *   2. the headline rises
- *   3. the supporting line follows
- *   4. the buttons arrive last
+ * Soft pastel auras (Cotton Rose / Powder Blush / Ash Grey) sit behind the
+ * content so the band feels warm and playful before a single product is shown.
+ * The primary photograph is the LCP element and is preloaded.
  *
- * A slow parallax drift runs underneath, offset by scroll position, so the
- * image feels present rather than fixed. All of it is CSS-driven and is
- * skipped for visitors who prefer reduced motion.
+ * Service promises (shipping, returns, fabrics) live in the footer rather than
+ * here, so the hero stays uncluttered and nothing is stated twice on the page.
  */
 
 export function Hero() {
-  const sectionRef = useRef<HTMLElement | null>(null);
-  const imageRef = useRef<HTMLDivElement | null>(null);
-  const reduceMotion = useReducedMotion();
-
-  useEffect(() => {
-    const section = sectionRef.current;
-    const image = imageRef.current;
-    if (!section || !image || reduceMotion) return;
-
-    let frameId = 0;
-
-    const update = () => {
-      frameId = 0;
-      const rect = section.getBoundingClientRect();
-      if (rect.bottom < 0) return;
-      // Positive while scrolling down, clamped so the image never drifts out.
-      const progress = Math.max(-1, Math.min(1, rect.top / window.innerHeight));
-      image.style.transform = `translate3d(0, ${progress * 9}%, 0)`;
-    };
-
-    const onScroll = () => {
-      if (frameId) return;
-      frameId = window.requestAnimationFrame(update);
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      if (frameId) window.cancelAnimationFrame(frameId);
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, [reduceMotion]);
-
   return (
-    <section
-      ref={sectionRef}
-      className="relative isolate flex min-h-[78vh] items-end overflow-hidden bg-ash-800 sm:min-h-[85vh] lg:min-h-[92vh]"
-      aria-labelledby="hero-heading"
-    >
-      {/* Photograph */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div
-          ref={imageRef}
-          className="ap-anim-hero relative h-[112%] w-full will-change-transform"
-        >
-          <Image
-            src={slotUrl("hero", { width: 2200, aspect: "landscape" })}
-            alt="A model wearing the new AllPatels season in soft natural light"
-            fill
-            // The hero is the LCP element, so it is preloaded in <head>.
-            // Note: `priority` is deprecated in Next.js 16 in favour of `preload`.
-            preload
-            sizes="100vw"
-            className="object-cover object-center"
-          />
-        </div>
-        {/* Keeps the type legible over the photograph without flattening it. */}
-        <div className="absolute inset-0 bg-gradient-to-t from-ash-800/80 via-ash-800/25 to-ash-800/35" />
-      </div>
+    <section className="relative isolate overflow-hidden bg-floral" aria-labelledby="hero-heading">
+      {/* Pastel aura — soft tonal depth, never a gradient over the photography. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -left-32 top-0 h-80 w-80 rounded-full bg-cotton-700/60 blur-3xl"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-24 top-24 h-96 w-96 rounded-full bg-ash-800/70 blur-3xl"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-0 left-1/4 h-72 w-72 rounded-full bg-powder-800/50 blur-3xl"
+      />
 
-      {/* Content */}
-      <div className="relative w-full px-5 pb-14 pt-32 sm:px-8 sm:pb-20 lg:px-12 lg:pb-24">
-        <div className="mx-auto w-full max-w-[1400px]">
-          <div className="max-w-3xl">
-            <p
-              className="ap-anim-fade ap-eyebrow mb-6 flex items-center gap-3 text-cotton-400"
-              style={{ animationDelay: "200ms" }}
-            >
-              <span aria-hidden="true" className="h-px w-10 bg-cotton-400/70" />
+      <Container className="relative py-12 sm:py-16 lg:py-20">
+        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-14">
+          {/* Copy */}
+          <div className="lg:col-span-5">
+            <p className="ap-anim-fade mb-5 flex items-center gap-3 text-burnt">
+              <span aria-hidden="true" className="h-px w-8 bg-burnt/50" />
               Autumn / Winter Edit
             </p>
 
             <h1
               id="hero-heading"
-              className="ap-anim-rise text-[clamp(3rem,11vw,8rem)] font-normal leading-[0.92] tracking-[-0.03em] text-floral-400"
-              style={{ animationDelay: "380ms" }}
+              className="ap-anim-rise text-[clamp(2.75rem,6vw,5rem)] leading-[0.95] tracking-[-0.03em] text-ink"
+              style={{ animationDelay: "120ms" }}
             >
               Every day,
               <br />
-              <span className="italic text-cotton-400">elevated.</span>
+              <span className="italic text-burnt">elevated.</span>
             </h1>
 
             <p
-              className="ap-anim-rise ap-body mt-7 max-w-md text-floral-200/90 sm:text-lg"
-              style={{ animationDelay: "620ms" }}
+              className="ap-anim-rise ap-body mt-6 max-w-md text-ink/70"
+              style={{ animationDelay: "320ms" }}
             >
-              Discover pieces designed for the way you live, move and express yourself.
+              Thoughtfully designed pieces for everyday style, occasions and everything in
+              between — made in small runs from natural fabrics.
             </p>
 
             <div
               className="ap-anim-rise mt-9 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4"
-              style={{ animationDelay: "800ms" }}
+              style={{ animationDelay: "480ms" }}
             >
-              <Button href="/new-arrivals" variant="primary" size="lg" withArrow className="sm:w-auto">
+              <Button href="/new-arrivals" variant="primary" size="lg" withArrow>
                 Shop new
               </Button>
-              <Button
-                href="/collections"
-                variant="light"
-                size="lg"
-                withArrow
-                className="border-transparent bg-transparent text-floral-200 hover:bg-floral-400/15 sm:w-auto"
-              >
-                Explore collection
+              <Button href="/collections" variant="outline" size="lg" withArrow>
+                Explore collections
               </Button>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Scroll cue */}
-      <div
-        className="ap-anim-fade pointer-events-none absolute bottom-6 right-5 hidden items-center gap-3 text-floral-200/70 sm:right-8 lg:right-12 lg:flex"
-        style={{ animationDelay: "1200ms" }}
-      >
-        <span className="ap-eyebrow">Scroll</span>
-        <span aria-hidden="true" className="block h-px w-14 bg-floral-200/40" />
-      </div>
+          {/* Media */}
+          <div className="lg:col-span-7">
+            <Reveal variant="clip" duration={1200}>
+              <div className="relative">
+                <ParallaxImage
+                  src={slotUrl("hero", { width: 1800, aspect: "landscape" })}
+                  alt="A model wearing the new AllPastels season in soft natural light"
+                  aspect="landscape"
+                  strength={26}
+                  sizes="(max-width: 1024px) 100vw, 58vw"
+                  preload
+                />
+
+                {/* Round badge — nods to the category-first behaviour of modern commerce homepages. */}
+                <div className="absolute -right-3 -top-3 grid h-20 w-20 rotate-6 place-items-center rounded-full bg-burnt text-center leading-tight text-floral-900 shadow-lg sm:h-24 sm:w-24">
+                  <span className="ap-eyebrow">
+                    New
+                    <br />
+                    in
+                  </span>
+                </div>
+
+                {/* Floating caption card — the merchandising cue from the hero banner. */}
+                <Link
+                  href="/new-arrivals"
+                  className="group absolute bottom-4 left-4 flex items-center gap-4 rounded-2xl bg-floral/95 px-4 py-3 shadow-md backdrop-blur-sm transition-colors duration-500 hover:bg-floral sm:bottom-5 sm:left-5 sm:px-5 sm:py-4"
+                >
+                  <span>
+                    <span className="ap-eyebrow block text-ink/50">Comfy jogger sets</span>
+                    <span className="mt-1 block text-sm text-ink">350+ styles</span>
+                  </span>
+                  <ArrowRightIcon className="h-4 w-4 text-burnt transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1" />
+                </Link>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </Container>
     </section>
   );
 }

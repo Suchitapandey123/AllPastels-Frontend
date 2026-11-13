@@ -100,7 +100,7 @@ export function ProductFilters({ className, resultCount }: ProductFiltersProps) 
               <button
                 type="button"
                 onClick={() => setSingle("max", null)}
-                className="ap-eyebrow flex items-center gap-1.5 border border-ash-800 bg-ash-800 px-3.5 py-2 text-floral-50"
+                className="ap-eyebrow flex items-center gap-1.5 border border-ash-100 bg-ash-100 px-3.5 py-2 text-floral-900"
               >
                 Up to {formatPrice(Number(maxPrice))}
                 <CloseIcon className="h-3 w-3" />
@@ -173,13 +173,13 @@ export function ProductFilters({ className, resultCount }: ProductFiltersProps) 
           >
             <button
               type="button"
-              className="absolute inset-0 h-full w-full bg-ash-800/50"
+              className="absolute inset-0 h-full w-full bg-ash-100/50"
               onClick={() => setOpen(false)}
               aria-label="Close filters"
               tabIndex={-1}
             />
-            <div className="ap-anim-rise absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto bg-floral-400">
-              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-floral-400 px-5 py-4">
+            <div className="ap-anim-rise absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto bg-floral">
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-floral px-5 py-4">
                 <h2 className="ap-eyebrow text-ink">Filter</h2>
                 <button
                   type="button"
@@ -193,11 +193,11 @@ export function ProductFilters({ className, resultCount }: ProductFiltersProps) 
 
               <div className="px-5 py-6">{filters}</div>
 
-              <div className="sticky bottom-0 border-t border-line bg-floral-400 px-5 py-4">
+              <div className="sticky bottom-0 border-t border-line bg-floral px-5 py-4">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="ap-eyebrow w-full bg-ash-800 py-4 text-floral-50 transition-colors hover:bg-burnt"
+                  className="ap-eyebrow w-full bg-ash-100 py-4 text-floral-900 transition-colors hover:bg-burnt"
                 >
                   Show {resultCount !== undefined ? resultCount : "results"}
                 </button>
@@ -236,7 +236,7 @@ function ChipToggle({
       aria-pressed={active}
       className={
         active
-          ? "ap-eyebrow border border-ash-800 bg-ash-800 px-3.5 py-2 text-floral-50 transition-colors"
+          ? "ap-eyebrow border border-ash-100 bg-ash-100 px-3.5 py-2 text-floral-900 transition-colors"
           : "ap-eyebrow border border-line px-3.5 py-2 text-ink/70 transition-colors hover:border-ink"
       }
     >
@@ -267,7 +267,7 @@ function CheckFilter({
         aria-hidden="true"
         className={
           checked
-            ? "flex h-4 w-4 shrink-0 items-center justify-center border border-ash-800 bg-ash-800 text-floral-50"
+            ? "flex h-4 w-4 shrink-0 items-center justify-center border border-ash-100 bg-ash-100 text-floral-900"
             : "flex h-4 w-4 shrink-0 items-center justify-center border border-line transition-colors group-hover:border-ink"
         }
       >

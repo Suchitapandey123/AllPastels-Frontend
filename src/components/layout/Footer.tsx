@@ -46,7 +46,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="border-t border-line bg-floral-400">
+    <footer className="border-t border-line bg-floral">
       <Newsletter />
 
       {/* Service promises */}
@@ -68,12 +68,12 @@ export function Footer() {
       <Container>
         <div className="grid grid-cols-2 gap-10 py-12 sm:grid-cols-4 lg:gap-8 lg:py-16">
           <div className="col-span-2 sm:col-span-4 lg:col-span-1">
-            <Link href="/" className="inline-flex items-baseline" aria-label="AllPatels — home">
+            <Link href="/" className="inline-flex items-baseline" aria-label="AllPastels — home">
               <span className="font-display text-2xl leading-none tracking-[0.16em] text-ink">
                 ALL
               </span>
               <span className="font-display text-2xl leading-none tracking-[0.16em] text-burnt">
-                PATELS
+                PASTELS
               </span>
             </Link>
             <p className="ap-body mt-5 max-w-xs text-sm text-ink/60">
@@ -126,7 +126,7 @@ export function Footer() {
         <Container>
           <div className="flex flex-col items-center justify-between gap-4 py-6 sm:flex-row">
             <p className="ap-eyebrow text-ink/45">
-              © {year} AllPatels · All rights reserved
+              © {year} AllPastels · All rights reserved
             </p>
             <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
               {legalLinks.map((link) => (

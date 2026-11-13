@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Rating } from "@/components/ui/Rating";
 import { QuickAdd } from "@/components/product/QuickAdd";
 import { WishlistButton } from "@/components/product/WishlistButton";
-import { productImage } from "@/lib/images";
+import { productImageUrl } from "@/lib/images";
 import type { Product } from "@/lib/types";
 import { cn, discountPercent, formatPrice } from "@/lib/utils";
 
@@ -51,11 +51,11 @@ export function ProductCard({
   return (
     <article className={cn("group/card relative flex flex-col", className)}>
       {/* Image */}
-      <div className="relative overflow-hidden bg-ash-50">
+      <div className="relative overflow-hidden bg-surface">
         <Link href={href} className="block" tabIndex={-1} aria-hidden="true">
           <div className="relative aspect-[3/4] w-full">
             <Image
-              src={productImage(product.photoSet, 0, { width: 600 })}
+              src={productImageUrl(product, 0, { width: 600 })}
               alt={product.name}
               fill
               sizes={sizes}
@@ -64,7 +64,7 @@ export function ProductCard({
               className="object-cover transition-[transform,opacity] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:scale-[1.04] group-hover/card:opacity-0"
             />
             <Image
-              src={productImage(product.photoSet, 1, { width: 600 })}
+              src={productImageUrl(product, 1, { width: 600 })}
               alt=""
               fill
               sizes={sizes}
@@ -77,11 +77,14 @@ export function ProductCard({
         {/* Badges */}
         <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
           {discount > 0 && (
-            <span className="ap-eyebrow bg-burnt px-2.5 py-1 text-floral-50">{discount}% off</span>
+            <span className="ap-eyebrow bg-burnt px-2.5 py-1 text-floral-900">{discount}% off</span>
           )}
-          {product.isNew && !product.badge && (
-            <span className="ap-eyebrow bg-ash-400 px-2.5 py-1 text-ash-800">New</span>
-          )}
+{product.isNew && !product.badge && (
+  <span className="ap-eyebrow bg-ash px-2.5 py-1 text-ink">New</span>
+)}
+{product.stock === 0 && (
+  <span className="ap-eyebrow bg-ink/80 px-2.5 py-1 text-floral-900">Out of stock</span>
+)}
         </div>
 
         <WishlistButton
@@ -92,7 +95,7 @@ export function ProductCard({
         />
 
         {/* Quick add — slides up on hover, always present on touch */}
-        {showQuickAdd && (
+        {showQuickAdd && product.stock !== 0 && (
           <div
             className={cn(
               "absolute inset-x-0 bottom-0 translate-y-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
@@ -111,10 +114,10 @@ export function ProductCard({
       </div>
 
       {/* Meta */}
-      <div className="flex flex-1 flex-col pt-4">
+      <div className="flex min-w-0 flex-1 flex-col pt-4">
         <p className="ap-eyebrow text-ink/45">{product.categoryLabel}</p>
 
-        <h3 className="mt-1.5 text-[0.9375rem] leading-snug">
+        <h3 className="mt-1.5 min-w-0 text-[0.9375rem] leading-snug line-clamp-2">
           <Link href={href} className="transition-colors duration-300 hover:text-burnt">
             {product.name}
           </Link>

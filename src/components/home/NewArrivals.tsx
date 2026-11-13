@@ -3,7 +3,7 @@ import { Reveal } from "@/components/animations/Reveal";
 import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Section } from "@/components/ui/Section";
-import { getNewArrivals } from "@/lib/catalog";
+import { loadProducts, getNewArrivals } from "@/lib/catalog";
 
 /**
  * NewArrivals — the freshest eight pieces, in a 4/3/2 grid.
@@ -12,8 +12,9 @@ import { getNewArrivals } from "@/lib/catalog";
  * still browsing rather than comparing — one tap should be enough.
  */
 
-export function NewArrivals() {
-  const products = getNewArrivals().slice(0, 8);
+export async function NewArrivals() {
+  const result = await loadProducts();
+  const products = result.ok ? getNewArrivals(result.products).slice(0, 8) : [];
 
   return (
     <Section space="default" tone="canvas">

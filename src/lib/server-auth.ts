@@ -1,0 +1,134 @@
+import { cookies } from "next/headers";
+
+/**
+ * Server-side auth plumbing — shared by the Route Handlers under
+ * `src/app/api/auth/`.
+ *
+ * The backend's login JWT is written to an HttpOnly cookie here, so it is
+ * never reachable from client-side JavaScript. Protected calls (backend
+ * `/api/auth/me`, cart and orders) run from Route Handlers that read the
+ * cookie and send the JWT as a Bearer token.
+ */
+
+const BACKEND_ORIGIN =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+
+const TOKEN_COOKIE = "ap_token";
+
+/** Matches the backend's default JWT lifetime (JWT_EXPIRES_IN=7d). */
+const TOKEN_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
+
+export interface BackendAuthUser {
+  id: string;
+  name: string;
+  email: string;
+  isEmailVerified: boolean;
+  createdAt?: string;
+}
+
+interface BackendJson {
+  success?: unknown;
+  message?: unknown;
+  token?: unknown;
+  emailSent?: unknown;
+  data?: unknown;
+}
+
+/** Parses a backend user record — ignoring fields we do not display. */
+export function coerceUser(data: unknown): BackendAuthUser | null {
+  if (!data || typeof data !== "object") return null;
+  const record = data as Record<string, unknown>;
+  if (typeof record.id !== "string") return null;
+  if (typeof record.name !== "string") return null;
+  if (typeof record.email !== "string") return null;
+  return {
+    id: record.id,
+    name: record.name,
+    email: record.email,
+    isEmailVerified: record.isEmailVerified === true,
+    createdAt: typeof record.createdAt === "string" ? record.createdAt : undefined,
+  };
+}
+
+/**
+ * POSTs a JSON body to the backend and returns status + parsed body.
+ * Network failures map to a 502-shaped response so callers can render a
+ * retryable error instead of throwing into the UI.
+ */
+export async function backendPost(
+  path: string,
+  body: unknown,
+): Promise<{ status: number; body: BackendJson; reachable: boolean } | null> {
+  try {
+    const response = await fetch(`${BACKEND_ORIGIN}/api/auth${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body ?? {}),
+    });
+    const data = (await response.json().catch(() => ({}))) as BackendJson;
+    return { status: response.status, body: data ?? {}, reachable: true };
+  } catch {
+    return null;
+  }
+}
+
+/** Reads the backend message when it is a usable string. */
+export function backendMessage(body: BackendJson, fallback: string): string {
+  const message = body.message;
+  return typeof message === "string" && message.trim() ? message : fallback;
+}
+
+export function isEmailSent(body: BackendJson): boolean {
+  return body.emailSent === true;
+}
+
+export async function setSessionCookie(token: string) {
+  const jar = await cookies();
+  jar.set(TOKEN_COOKIE, token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: TOKEN_MAX_AGE_SECONDS,
+  });
+}
+
+export async function clearSessionCookie() {
+  const jar = await cookies();
+  jar.set(TOKEN_COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0,
+  });
+}
+
+export async function readSessionToken(): Promise<string | undefined> {
+  const jar = await cookies();
+  return jar.get(TOKEN_COOKIE)?.value;
+}
+
+/**
+ * Calls backend `GET /api/auth/me` with the cookie's JWT as a Bearer token.
+ * Returns the user when the session is still valid, otherwise null. The
+ * token is used in-memory only — never logged or returned to the client.
+ */
+export async function fetchCurrentUser(): Promise<BackendAuthUser | null> {
+  const token = await readSessionToken();
+  if (!token) return null;
+  try {
+    const response = await fetch(`${BACKEND_ORIGIN}/api/auth/me`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    const data = (await response.json().catch(() => null)) as BackendJson | null;
+    return data ? coerceUser(data.data) : null;
+  } catch {
+    return null;
+  }
+}
+
+export const COOKIE_NAME = TOKEN_COOKIE;

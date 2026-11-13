@@ -115,11 +115,11 @@ export const discoveries: Discovery[] = [
     href: "/shop?mood=travel",
     imageSlot: "discoveryTravel",
   },
-  {
-    id: "celebration",
-    title: "Celebrations",
-    description: "For birthdays, weddings and everything worth marking.",
-    href: "/shop?mood=party",
-    imageSlot: "discoveryCelebration",
-  },
+  // {
+  //   id: "celebration",
+  //   title: "Celebrations",
+  //   description: "For birthdays, weddings and everything worth marking.",
+  //   href: "/shop?mood=party",
+  //   imageSlot: "discoveryCelebration",
+  // },
 ];

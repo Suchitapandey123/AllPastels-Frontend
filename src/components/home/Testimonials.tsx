@@ -7,7 +7,8 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Section } from "@/components/ui/Section";
 import { ArrowRightIcon, StarIcon } from "@/components/ui/icons";
 import { testimonials } from "@/data/collections";
-import { getProductBySlug } from "@/lib/catalog";
+import { loadProducts } from "@/lib/catalog";
+import type { Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /**
@@ -24,6 +25,23 @@ const CARD_GAP = 24;
 export function Testimonials() {
   const trackRef = useRef<HTMLUListElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [productMap, setProductMap] = useState<Record<string, Product>>({});
+
+  useEffect(() => {
+    let active = true;
+    loadProducts().then((result) => {
+      if (!active || !result.ok) return;
+      const map: Record<string, Product> = {};
+      result.products.forEach((product) => {
+        map[product.slug] = product;
+        map[product.id] = product;
+      });
+      setProductMap(map);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Derive the active card from the scroll position so the dots stay
   // truthful when the user swipes or uses a trackpad.
@@ -79,13 +97,14 @@ export function Testimonials() {
       <div className="relative mt-12">
         <ul
           ref={trackRef}
+          tabIndex={0}
           className="ap-scroll-x -mx-5 flex snap-x snap-mandatory gap-6 px-5 pb-2 sm:-mx-8 sm:px-8 lg:mx-0 lg:px-0"
           aria-label="Customer reviews"
         >
           {testimonials.map((testimonial) => {
-            const product = testimonial.productSlug
-              ? getProductBySlug(testimonial.productSlug)
-              : undefined;
+const product = testimonial.productSlug
+  ? productMap[testimonial.productSlug]
+  : undefined;
 
             return (
               <li
@@ -94,6 +113,9 @@ export function Testimonials() {
               >
                 <div>
                   <div className="flex items-center gap-1 text-burnt">
+                    <span className="sr-only">
+                      Rated {testimonial.rating} out of 5
+                    </span>
                     {Array.from({ length: testimonial.rating }).map((_, index) => (
                       <StarIcon key={index} className="h-3.5 w-3.5" filled />
                     ))}
@@ -137,11 +159,16 @@ export function Testimonials() {
                     onClick={() => scrollToCard(index)}
                     aria-label={`Go to review ${index + 1}`}
                     aria-current={isActive ? "true" : undefined}
-                    className={cn(
-                      "block h-1.5 transition-all duration-500",
-                      isActive ? "w-8 bg-burnt" : "w-1.5 bg-ink/20 hover:bg-ink/40",
-                    )}
-                  />
+                    className="flex h-11 min-h-[44px] w-11 min-w-[44px] items-center justify-center"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "block h-1.5 transition-all duration-500",
+                        isActive ? "w-8 bg-burnt" : "w-1.5 bg-ink/20 hover:bg-ink/40",
+                      )}
+                    />
+                  </button>
                 </li>
               );
             })}

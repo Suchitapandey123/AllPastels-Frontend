@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useStore } from "@/components/store/StoreProvider";
 import { CloseIcon, HeartIcon, SearchIcon } from "@/components/ui/icons";
-import { products } from "@/data/products";
-import { productImage } from "@/lib/images";
+import { loadProducts } from "@/lib/catalog";
+import type { Product } from "@/lib/types";
+import { productImageUrl } from "@/lib/images";
 import { formatPrice } from "@/lib/utils";
 
 /**
@@ -23,6 +24,19 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { wishlist } = useStore();
   const [query, setQuery] = useState("");
+  const [catalog, setCatalog] = useState<Product[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    loadProducts().then((result) => {
+      if (active && result.ok) setCatalog(result.products);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const products = catalog;
 
   useEffect(() => {
     if (!open) return;
@@ -62,16 +76,16 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
     <div className="fixed inset-0 z-[70]" role="dialog" aria-modal="true" aria-label="Search">
       <button
         type="button"
-        className="absolute inset-0 h-full w-full bg-ash-800/50 backdrop-blur-[2px]"
+        className="absolute inset-0 h-full w-full bg-ash-100/50 backdrop-blur-[2px]"
         onClick={onClose}
         aria-label="Close search"
         tabIndex={-1}
       />
 
-      <div className="ap-anim-rise relative max-h-[85vh] overflow-y-auto bg-floral-400 shadow-2xl">
+      <div className="ap-anim-rise relative max-h-[85vh] overflow-y-auto bg-floral shadow-2xl">
         <div className="mx-auto w-full max-w-3xl px-5 py-6 sm:px-8 sm:py-10">
           <div className="mb-6 flex items-center justify-between">
-            <p className="ap-eyebrow text-burnt">Search AllPatels</p>
+            <p className="ap-eyebrow text-burnt">Search AllPastels</p>
             <button
               type="button"
               onClick={onClose}
@@ -119,10 +133,10 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
                       }}
                       className="flex w-full items-center gap-4 py-3.5 text-left"
                     >
-                      <span className="relative h-16 w-12 shrink-0 overflow-hidden bg-ash-100">
+                      <span className="relative h-16 w-12 shrink-0 overflow-hidden bg-ash-800">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={productImage(product.photoSet, 0, { width: 120 })}
+                          src={productImageUrl(product, 0, { width: 120 })}
                           alt=""
                           loading="lazy"
                           className="h-full w-full object-cover"
@@ -163,12 +177,12 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
                         router.push(`/products/${product.slug}`);
                         onClose();
                       }}
-                      className="flex items-center gap-3 border border-line bg-floral-50 px-3 py-2 text-left transition-colors hover:border-burnt"
+                      className="flex items-center gap-3 border border-line bg-floral-900 px-3 py-2 text-left transition-colors hover:border-burnt"
                     >
-                      <span className="relative h-12 w-9 shrink-0 overflow-hidden bg-ash-100">
+                      <span className="relative h-12 w-9 shrink-0 overflow-hidden bg-ash-800">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={productImage(product.photoSet, 0, { width: 90 })}
+                          src={productImageUrl(product, 0, { width: 90 })}
                           alt=""
                           loading="lazy"
                           className="h-full w-full object-cover"

@@ -49,14 +49,14 @@ export function SectionHeading({
             className={cn(
               "ap-eyebrow mb-4 flex items-center gap-3",
               isCentered && "justify-center",
-              tone === "inverted" ? "text-ash-800/70" : "text-burnt",
+              tone === "inverted" ? "text-ink/70" : "text-burnt",
             )}
           >
             <span
               aria-hidden="true"
               className={cn(
                 "h-px w-8",
-                tone === "inverted" ? "bg-ash-800/40" : "bg-burnt/50",
+                tone === "inverted" ? "bg-ash-100/40" : "bg-burnt/50",
               )}
             />
             {eyebrow}
@@ -66,7 +66,7 @@ export function SectionHeading({
         <Heading
           className={cn(
             "text-[clamp(2rem,4.5vw,3.5rem)]",
-            tone === "inverted" ? "text-ash-800" : "text-ink",
+            tone === "inverted" ? "text-ash-100" : "text-ink",
           )}
         >
           {title}
@@ -77,7 +77,7 @@ export function SectionHeading({
             className={cn(
               "ap-body mt-5 max-w-xl",
               isCentered && "mx-auto",
-              tone === "inverted" ? "text-ash-800/75" : "text-ink/70",
+              tone === "inverted" ? "text-ink/75" : "text-ink/70",
             )}
           >
             {description}

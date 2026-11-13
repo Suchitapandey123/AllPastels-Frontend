@@ -2,22 +2,39 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { placeGuestOrder, placeOrderFromCart } from "@/api";
+import { useAuth } from "@/components/store/AuthProvider";
 import { useStore } from "@/components/store/StoreProvider";
-import { CheckIcon } from "@/components/ui/icons";
-import { FREE_SHIPPING_THRESHOLD } from "@/data/site";
-import { productImage } from "@/lib/images";
-import { formatPrice, pluralize } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
+import { Container } from "@/components/ui/Container";
+import {
+  GiftIcon,
+  LockIcon,
+  ReturnIcon,
+  TruckIcon,
+} from "@/components/ui/icons";
+import { quoteShipping, quoteTax } from "@/lib/checkout-settings";
+import { productImageUrl } from "@/lib/images";
+import { COUPON_CODE_MAX_LENGTH, normalizeCouponCode } from "@/api/coupons/coupons.api";
+import { SITE } from "@/data/site";
+import { cn, formatPrice, pluralize } from "@/lib/utils";
+
+function newIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+}
 
 /**
- * CheckoutPage — a single-page checkout.
+ * CheckoutPage — a single-page checkout for signed-in and guest shoppers.
  *
- * Client-validated and self-contained, with a clear "what happens next"
- * confirmation state. No payment is taken: wiring this to a real gateway
- * means replacing `handleSubmit` and keeping everything else.
+ * Delivery details are validated locally. Signed-in customers check out their
+ * server cart; guests check out their local bag. The backend owns item prices,
+ * stock checks, coupon validation, shipping, tax and the final total.
  */
-
-const SHIPPING_FEE = 99;
 
 interface FormValues {
   fullName: string;
@@ -63,26 +80,198 @@ const FIELDS: {
   label: string;
   type: string;
   autoComplete: string;
-  full?: boolean;
+  span: 2 | 3 | 6;
+  placeholder?: string;
+  hint?: string;
+  inputMode?: "text" | "email" | "tel" | "numeric";
+  maxLength?: number;
 }[] = [
-  { name: "fullName", label: "Full name", type: "text", autoComplete: "name", full: true },
-  { name: "email", label: "Email", type: "email", autoComplete: "email", full: true },
-  { name: "phone", label: "Phone", type: "tel", autoComplete: "tel", full: true },
-  { name: "address", label: "Address", type: "text", autoComplete: "street-address", full: true },
-  { name: "city", label: "City", type: "text", autoComplete: "address-level2" },
-  { name: "state", label: "State", type: "text", autoComplete: "address-level1" },
-  { name: "pincode", label: "PIN code", type: "text", autoComplete: "postal-code" },
+  {
+    name: "fullName",
+    label: "Full name",
+    type: "text",
+    autoComplete: "name",
+    span: 3,
+    placeholder: "Aarav Patel",
+  },
+  {
+    name: "phone",
+    label: "Phone number",
+    type: "tel",
+    autoComplete: "tel",
+    span: 3,
+    placeholder: "+91 98765 43210",
+    inputMode: "tel",
+  },
+  {
+    name: "email",
+    label: "Email address",
+    type: "email",
+    autoComplete: "email",
+    span: 6,
+    placeholder: "you@example.com",
+    hint: "Order confirmation and delivery updates go here.",
+    inputMode: "email",
+  },
+  {
+    name: "address",
+    label: "Street address",
+    type: "text",
+    autoComplete: "street-address",
+    span: 6,
+    placeholder: "House / flat, building, street, area",
+  },
+  {
+    name: "city",
+    label: "City",
+    type: "text",
+    autoComplete: "address-level2",
+    span: 2,
+    placeholder: "Mumbai",
+  },
+  {
+    name: "state",
+    label: "State",
+    type: "text",
+    autoComplete: "address-level1",
+    span: 2,
+    placeholder: "Maharashtra",
+  },
+  {
+    name: "pincode",
+    label: "PIN code",
+    type: "text",
+    autoComplete: "postal-code",
+    span: 2,
+    placeholder: "400001",
+    inputMode: "numeric",
+    maxLength: 6,
+  },
 ];
 
+function SectionHeading({
+  id,
+  step,
+  title,
+  description,
+}: {
+  id: string;
+  step: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex items-start gap-4 sm:gap-5">
+      <span className="ap-eyebrow mt-1 shrink-0 text-burnt/70">{step}</span>
+      <div className="min-w-0">
+        <h2 id={id} className="text-[clamp(1.3rem,2.2vw,1.55rem)]">
+          {title}
+        </h2>
+        <p className="ap-body mt-2 max-w-lg text-sm text-ink/60">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+function CheckoutField({
+  field,
+  value,
+  error,
+  onChange,
+}: {
+  field: (typeof FIELDS)[number];
+  value: string;
+  error?: string;
+  onChange: (value: string) => void;
+}) {
+  const inputId = `checkout-${field.name}`;
+  const errorId = `${inputId}-error`;
+  const hintId = `${inputId}-hint`;
+  const describedBy = error ? errorId : field.hint ? hintId : undefined;
+  const spanClass =
+    field.span === 6
+      ? "sm:col-span-6"
+      : field.span === 3
+        ? "sm:col-span-3"
+        : "sm:col-span-2";
+
+  return (
+    <div className={cn("group/field", spanClass)}>
+      <label
+        htmlFor={inputId}
+        className="ap-eyebrow mb-2 block text-ink/55 transition-colors duration-300 group-focus-within/field:text-burnt"
+      >
+        {field.label}
+      </label>
+      <div
+        className={cn(
+          "border bg-floral transition-all duration-300",
+          error
+            ? "border-burnt bg-burnt-900/40"
+            : "border-line hover:border-ash-400 focus-within:border-burnt focus-within:bg-floral-600",
+        )}
+      >
+        <input
+          id={inputId}
+          name={field.name}
+          type={field.type}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          autoComplete={field.autoComplete}
+          inputMode={field.inputMode}
+          maxLength={field.maxLength}
+          placeholder={field.placeholder}
+          required
+          aria-invalid={Boolean(error)}
+          aria-describedby={describedBy}
+          className="w-full bg-transparent px-3.5 py-3.5 text-sm text-ink outline-none placeholder:text-ink/30"
+        />
+      </div>
+      {error ? (
+        <p
+          id={errorId}
+          role="alert"
+          className="ap-body mt-2 border-l border-burnt/50 pl-2 text-xs text-burnt-400"
+        >
+          {error}
+        </p>
+      ) : field.hint ? (
+        <p id={hintId} className="ap-body mt-2 text-xs text-ink/45">
+          {field.hint}
+        </p>
+      ) : null}
+    </div>
+  );
+}
 
 export function CheckoutPage() {
-  const { cart, cartSubtotal, clearCart, hydrated } = useStore();
+  const { cart, cartSubtotal, refreshCart, clearCart, hydrated, checkoutSettings } =
+    useStore();
+  const { session, hydrated: authHydrated } = useAuth();
+  const router = useRouter();
+  const checkoutKeyRef = useRef("");
   const [values, setValues] = useState<FormValues>(EMPTY_FORM);
   const [errors, setErrors] = useState<Partial<Record<keyof FormValues, string>>>({});
-  const [placed, setPlaced] = useState(false);
+  const [placing, setPlacing] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [couponCode, setCouponCode] = useState("");
 
-  const shipping = cartSubtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
-  const total = cartSubtotal + shipping;
+  const shippingQuote = quoteShipping(checkoutSettings, cartSubtotal);
+  const taxQuote = quoteTax(checkoutSettings, cartSubtotal);
+  const total = cartSubtotal + shippingQuote.shipping + taxQuote.amount;
+  const normalizedCoupon = normalizeCouponCode(couponCode);
+
+  useEffect(() => {
+    if (!session) return;
+    const timer = window.setTimeout(() => {
+      setValues((current) => ({
+        ...current,
+        fullName: current.fullName || session.name,
+        email: current.email || session.email,
+      }));
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [session]);
 
   const update = (name: keyof FormValues, value: string) => {
     setValues((current) => ({ ...current, [name]: value }));
@@ -95,214 +284,342 @@ export function CheckoutPage() {
     }
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (placing) return;
+
     const found = validate(values);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
 
-    // A real integration would hand off to a payment provider here.
-    setPlaced(true);
-    clearCart();
+    setSubmitError(null);
+    setPlacing(true);
+    const shippingAddress = {
+      fullName: values.fullName.trim(),
+      line1: values.address.trim(),
+      city: values.city.trim(),
+      state: values.state.trim() || undefined,
+      postalCode: values.pincode.trim(),
+      country: "India",
+      phone: values.phone.trim() || undefined,
+    };
+    if (!checkoutKeyRef.current) {
+      checkoutKeyRef.current = newIdempotencyKey();
+    }
+    const idempotencyKey = checkoutKeyRef.current;
+    const result = session
+      ? await placeOrderFromCart({
+          shippingAddress,
+          couponCode: normalizedCoupon || undefined,
+          paymentMethod: "cod",
+          idempotencyKey,
+        })
+      : await placeGuestOrder({
+          items: cart.map((line) => ({
+            productId: line.productId,
+            qty: line.quantity,
+            size: line.size,
+          })),
+          shippingAddress,
+          customerEmail: values.email.trim(),
+          couponCode: normalizedCoupon || undefined,
+          paymentMethod: "cod",
+          idempotencyKey,
+        });
+    setPlacing(false);
+
+    if (!result.ok) {
+      setSubmitError(result.error);
+      return;
+    }
+
+    checkoutKeyRef.current = "";
+    if (session) void refreshCart();
+    else void clearCart();
+    const query = session
+      ? ""
+      : `?email=${encodeURIComponent(values.email.trim())}`;
+    router.push(`/order-success/${result.order.id}${query}`);
   };
 
-  if (placed) {
+  if (!hydrated || !authHydrated) {
     return (
-      <div className="flex flex-col items-center gap-7 px-5 py-24 text-center sm:py-32">
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-ash-400 text-ash-800">
-          <CheckIcon className="h-7 w-7" />
-        </span>
-        <div>
-          <h1 className="text-[clamp(2rem,5vw,3.25rem)]">Order confirmed</h1>
-          <p className="ap-body mx-auto mt-4 max-w-md text-ink/65">
-            Thank you, {values.fullName.split(" ")[0]}. We have sent a confirmation
-            to {values.email} and will be in touch when your order ships.
-          </p>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Link
-            href="/shop"
-            className="ap-eyebrow bg-ash-800 px-8 py-4 text-floral-50 transition-colors hover:bg-burnt"
-          >
-            Continue shopping
-          </Link>
-          <Link
-            href="/faq#tracking"
-            className="ap-eyebrow border border-line px-8 py-4 text-ink transition-colors hover:border-ink"
-          >
-            Track your order
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (!hydrated) {
-    return (
-      <div className="py-24 text-center">
-        <p className="ap-eyebrow text-ink/40">Loading checkout…</p>
-      </div>
+      <Container className="py-24 text-center">
+        <p className="ap-eyebrow text-ink/40">Loading checkout&hellip;</p>
+      </Container>
     );
   }
 
   if (cart.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-7 px-5 py-24 text-center sm:py-32">
-        <div>
-          <h1 className="text-[clamp(2rem,5vw,3.25rem)]">Nothing to check out</h1>
+      <Container className="py-20 sm:py-28">
+        <div className="mx-auto max-w-md text-center">
+          <p className="ap-eyebrow text-burnt">Your bag</p>
+          <h1 className="mt-4 text-[clamp(2rem,5vw,3.25rem)]">Nothing to check out</h1>
           <p className="ap-body mx-auto mt-4 max-w-sm text-ink/65">
             Your bag is empty. Add a piece or two and come back.
           </p>
+          <Button href="/shop" variant="primary" size="md" withArrow className="mt-8">
+            Browse everything
+          </Button>
         </div>
-        <Link
-          href="/shop"
-          className="ap-eyebrow bg-ash-800 px-8 py-4 text-floral-50 transition-colors hover:bg-burnt"
-        >
-          Browse everything
-        </Link>
-      </div>
+      </Container>
     );
   }
 
-
   return (
-    <div className="mx-auto w-full max-w-[1400px] px-5 py-10 sm:px-8 sm:py-14 lg:px-12">
-      <p className="ap-eyebrow mb-3 flex items-center gap-3 text-burnt">
-        <span aria-hidden="true" className="h-px w-8 bg-burnt/50" />
-        Secure checkout
-      </p>
-      <h1 className="text-[clamp(2rem,4.5vw,3.25rem)]">Checkout</h1>
+    <Container className="py-10 sm:py-14">
+      <div className="ap-anim-fade flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b border-line pb-5">
+        <p className="ap-eyebrow flex items-center gap-3 text-burnt">
+          <span aria-hidden="true" className="h-px w-8 bg-burnt/50" />
+          Secure checkout
+        </p>
+        <p className="ap-eyebrow hidden text-ink/40 sm:block">{SITE.tagline}</p>
+      </div>
+
+      <div className="ap-anim-rise mt-7 flex flex-col gap-5 sm:mt-9 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-[clamp(2rem,4.5vw,3.25rem)]">Checkout</h1>
+          <p className="ap-body mt-3 max-w-lg text-ink/65">
+            Delivery details, a quick review and you are done. A confirmation
+            email follows the moment your order is placed.
+          </p>
+        </div>
+        <p className="ap-eyebrow flex items-center gap-2 text-ink/45">
+          <TruckIcon className="h-4 w-4 text-burnt" />
+          Delivery across India &middot; 3&ndash;6 days
+        </p>
+      </div>
 
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="mt-10 grid gap-10 lg:grid-cols-[1fr_380px] lg:gap-16"
+        className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-16"
       >
-        {/* Details */}
-        <div>
-          <h2 className="text-xl">Delivery details</h2>
-          <p className="ap-body mt-2 text-sm text-ink/60">
-            We currently deliver across India. Typical delivery is 3–6 working days.
-          </p>
+        <div className="min-w-0">
+          <section aria-labelledby="checkout-delivery-heading">
+            <SectionHeading
+              id="checkout-delivery-heading"
+              step="01"
+              title="Delivery details"
+              description="We currently deliver across India. Please use the address where someone can receive the parcel during the day."
+            />
 
-          <div className="mt-7 grid gap-5 sm:grid-cols-2">
-            {FIELDS.map((field) => {
-              const error = errors[field.name];
-              const inputId = `checkout-${field.name}`;
+            <div className="mt-7 grid gap-x-5 gap-y-6 sm:grid-cols-6">
+              {FIELDS.map((field) => (
+                <CheckoutField
+                  key={field.name}
+                  field={field}
+                  value={values[field.name]}
+                  error={errors[field.name]}
+                  onChange={(value) => update(field.name, value)}
+                />
+              ))}
+            </div>
+          </section>
 
-              return (
-                <div key={field.name} className={field.full ? "sm:col-span-2" : ""}>
-                  <label htmlFor={inputId} className="ap-eyebrow mb-2 block text-ink/50">
-                    {field.label}
-                  </label>
-                  <input
-                    id={inputId}
-                    name={field.name}
-                    type={field.type}
-                    value={values[field.name]}
-                    onChange={(event) => update(field.name, event.target.value)}
-                    autoComplete={field.autoComplete}
-                    aria-invalid={Boolean(error)}
-                    aria-describedby={error ? `${inputId}-error` : undefined}
-                    className={
-                      error
-                        ? "w-full border-b border-burnt bg-transparent py-3 text-sm text-ink outline-none transition-colors"
-                        : "w-full border-b border-line bg-transparent py-3 text-sm text-ink outline-none transition-colors focus:border-burnt"
-                    }
-                  />
-                  {error && (
-                    <p
-                      id={`${inputId}-error`}
-                      role="alert"
-                      className="ap-body mt-1.5 text-xs text-burnt"
-                    >
-                      {error}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          <h2 className="mt-12 text-xl">Payment</h2>
-          <div className="mt-5 border border-line bg-ash-50 p-6">
-            <p className="ap-body text-sm text-ink/70">
-              This is a demonstration storefront, so no payment is taken and no card
-              details are collected. In production this section would hand off to a
-              secure payment provider.
-            </p>
-          </div>
-
-          <button
-            type="submit"
-            className="ap-eyebrow mt-8 w-full bg-ash-800 py-4 text-floral-50 transition-colors duration-500 hover:bg-burnt"
+          <section
+            aria-labelledby="checkout-payment-heading"
+            className="mt-12 border-t border-line pt-10"
           >
-            Place order — {formatPrice(total)}
-          </button>
+            <SectionHeading
+              id="checkout-payment-heading"
+              step="02"
+              title="Payment"
+              description="Review your details and place the order when everything looks right."
+            />
 
-          <p className="ap-body mt-4 text-center text-xs text-ink/50">
-            By placing this order you agree to our{" "}
-            <Link href="/faq#terms" className="text-burnt underline underline-offset-4">
-              terms
-            </Link>{" "}
-            and{" "}
-            <Link href="/faq#privacy" className="text-burnt underline underline-offset-4">
-              privacy policy
-            </Link>
-            .
-          </p>
+            <div className="mt-6 flex gap-4 border border-line bg-surface/70 p-5 sm:p-6">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-line bg-floral text-burnt">
+                <LockIcon className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="font-display text-lg leading-snug">Cash on delivery</p>
+                <p className="ap-body mt-2 text-sm text-ink/60">
+                  Pay in cash when your parcel arrives. No card details are
+                  collected here. Online payment is not enabled on this
+                  storefront yet.
+                </p>
+              </div>
+            </div>
+
+            <div className="ap-body mt-5 flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-5 text-xs text-ink/55">
+              <span className="flex items-center gap-2">
+                <TruckIcon className="h-4 w-4 text-burnt/70" />
+                Tracked delivery
+              </span>
+              <span className="flex items-center gap-2">
+                <ReturnIcon className="h-4 w-4 text-burnt/70" />
+                15-day returns
+              </span>
+              <span className="flex items-center gap-2">
+                <GiftIcon className="h-4 w-4 text-burnt/70" />
+                Gift wrap available
+              </span>
+            </div>
+          </section>
         </div>
 
-
-        {/* Order summary */}
         <aside className="lg:sticky lg:top-28 lg:self-start">
-          <div className="bg-ash-50 p-6 sm:p-8">
-            <h2 className="text-xl">Your order</h2>
-            <p className="ap-eyebrow mt-2 text-ink/45">{pluralize(cart.length, "item")}</p>
+          <div className="border border-line bg-surface/70">
+            <div className="border-b border-line px-5 py-5 sm:px-6">
+              <div className="flex items-baseline justify-between gap-4">
+                <h2 className="text-xl">Order summary</h2>
+                <Link
+                  href="/cart"
+                  className="ap-eyebrow text-ink/45 transition-colors hover:text-burnt"
+                >
+                  Edit bag
+                </Link>
+              </div>
+              <p className="ap-eyebrow mt-2 text-ink/40">{pluralize(cart.length, "item")}</p>
+            </div>
 
-            <ul className="mt-6 flex flex-col gap-4 border-b border-line pb-6">
+            <ul className="divide-y divide-line px-5 sm:px-6">
               {cart.map((line) => (
-                <li key={`${line.productId}-${line.size}`} className="flex gap-3">
-                  <span className="relative h-20 w-16 shrink-0 overflow-hidden bg-floral-400">
+                <li key={`${line.productId}-${line.size}`} className="flex gap-4 py-5">
+                  <span className="relative h-24 w-[4.5rem] shrink-0 overflow-hidden border border-line bg-floral">
                     <Image
-                      src={productImage(line.product.photoSet, 0, { width: 160 })}
-                      alt=""
+                      src={productImageUrl(line.product, 0, { width: 180 })}
+                      alt={line.product.name}
                       fill
-                      sizes="64px"
+                      sizes="72px"
                       className="object-cover"
                     />
-                    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-ash-800 px-1 text-[0.625rem] text-floral-50">
-                      {line.quantity}
+                    <span
+                      aria-hidden="true"
+                      className="absolute bottom-0 right-0 border-l border-t border-line bg-floral-900 px-1.5 py-0.5 text-[0.625rem] font-medium tabular-nums text-ink"
+                    >
+                      &times;{line.quantity}
                     </span>
                   </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm text-ink">{line.product.name}</span>
-                    <span className="ap-eyebrow text-ink/40">Size {line.size}</span>
-                  </span>
-                  <span className="shrink-0 text-sm tabular-nums text-ink">
-                    {formatPrice(line.lineTotal)}
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="line-clamp-2 text-sm leading-snug text-ink">
+                      {line.product.name}
+                    </span>
+                    <span className="ap-body mt-1 text-xs text-ink/50">
+                      Size {line.size} &middot; Qty {line.quantity}
+                    </span>
+                    <span className="mt-auto flex items-baseline justify-between gap-3 pt-3">
+                      {line.quantity > 1 ? (
+                        <span className="ap-body text-xs text-ink/45">
+                          {formatPrice(line.product.price)} each
+                        </span>
+                      ) : (
+                        <span />
+                      )}
+                      <span className="shrink-0 text-sm tabular-nums text-ink">
+                        {formatPrice(line.lineTotal)}
+                      </span>
+                    </span>
                   </span>
                 </li>
               ))}
             </ul>
 
-            <dl className="ap-body mt-6 flex flex-col gap-3 text-ink/70">
-              <div className="flex justify-between gap-4">
+            <div className="border-t border-line px-5 py-5 sm:px-6">
+              <label htmlFor="checkout-coupon" className="ap-eyebrow mb-2 block text-ink/55">
+                Coupon code
+              </label>
+              <input
+                id="checkout-coupon"
+                name="couponCode"
+                type="text"
+                value={couponCode}
+                onChange={(event) => setCouponCode(event.target.value)}
+                maxLength={COUPON_CODE_MAX_LENGTH}
+                autoComplete="off"
+                placeholder="Enter a code"
+                className="w-full border border-line bg-floral px-3.5 py-3 text-sm uppercase tracking-[0.08em] text-ink outline-none transition-colors placeholder:normal-case placeholder:tracking-normal placeholder:text-ink/30 hover:border-ash-400 focus:border-burnt"
+              />
+              <p className="ap-body mt-2 text-xs text-ink/45">
+                {normalizedCoupon
+                  ? "The discount is validated and applied when you place the order."
+                  : "Have an offer? Enter it here and we will apply it at checkout."}
+              </p>
+            </div>
+
+            <dl className="ap-body flex flex-col gap-3 border-t border-line px-5 py-5 text-sm text-ink/65 sm:px-6">
+              <div className="flex items-baseline justify-between gap-4">
                 <dt>Subtotal</dt>
                 <dd className="tabular-nums text-ink">{formatPrice(cartSubtotal)}</dd>
               </div>
-              <div className="flex justify-between gap-4">
+              {normalizedCoupon && (
+                <div className="flex items-baseline justify-between gap-4">
+                  <dt className="flex min-w-0 items-baseline gap-2">
+                    <span>Coupon discount</span>
+                    <span className="ap-eyebrow truncate text-burnt">{normalizedCoupon}</span>
+                  </dt>
+                  <dd className="shrink-0 text-right text-xs text-ink/50">Applied on order</dd>
+                </div>
+              )}
+              <div className="flex items-baseline justify-between gap-4">
                 <dt>Shipping</dt>
-                <dd className="text-ink">{shipping === 0 ? "Free" : formatPrice(shipping)}</dd>
+                <dd className={shippingQuote.free ? "text-ash-200" : "text-ink"}>
+                  {shippingQuote.free ? "Free" : formatPrice(shippingQuote.shipping)}
+                </dd>
               </div>
-              <div className="flex justify-between gap-4 border-t border-line pt-3 text-base">
-                <dt className="text-ink">Total</dt>
-                <dd className="tabular-nums text-ink">{formatPrice(total)}</dd>
+              {taxQuote.ratePercent > 0 && (
+                <div className="flex items-baseline justify-between gap-4">
+                  <dt>Tax ({taxQuote.ratePercent}%)</dt>
+                  <dd className="tabular-nums text-ink">{formatPrice(taxQuote.amount)}</dd>
+                </div>
+              )}
+              <div className="mt-2 flex items-baseline justify-between gap-4 border-t border-line pt-4">
+                <dt className="ap-eyebrow text-ink/55">
+                  {normalizedCoupon ? "Estimated total" : "Total"}
+                </dt>
+                <dd className="font-display text-2xl leading-none tabular-nums text-ink">
+                  {formatPrice(total)}
+                </dd>
               </div>
             </dl>
+
+            {Object.keys(errors).length > 0 && (
+              <div className="border-t border-line px-5 py-4 sm:px-6">
+                <p className="ap-body text-xs text-burnt-400">
+                  Please complete the highlighted delivery details above before
+                  placing your order.
+                </p>
+              </div>
+            )}
+
+            {submitError && (
+              <div className="border-t border-burnt/40 bg-burnt-900 px-5 py-4 sm:px-6">
+                <p role="alert" className="ap-body text-sm text-burnt-200">
+                  {submitError}
+                </p>
+              </div>
+            )}
+
+            <div className="border-t border-line px-5 py-5 sm:px-6">
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                className="w-full"
+                withArrow
+                disabled={placing}
+                aria-busy={placing}
+              >
+                {placing ? "Placing order\u2026" : `Place order \u2014 ${formatPrice(total)}`}
+              </Button>
+
+              <p className="ap-body mt-4 text-center text-xs text-ink/50">
+                By placing this order you agree to our{" "}
+                <Link href="/faq#terms" className="text-burnt underline underline-offset-4">
+                  terms
+                </Link>{" "}
+                and{" "}
+                <Link href="/faq#privacy" className="text-burnt underline underline-offset-4">
+                  privacy policy
+                </Link>
+                .
+              </p>
+            </div>
           </div>
         </aside>
       </form>
-    </div>
+    </Container>
   );
 }

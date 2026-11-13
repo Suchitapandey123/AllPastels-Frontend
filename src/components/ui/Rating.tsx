@@ -24,13 +24,16 @@ function Star({ fill, half }: { fill: number; half: boolean }) {
       viewBox="0 0 20 20"
       className={cn(
         "h-3.5 w-3.5",
-        half ? "text-burnt-400" : fill > 0.5 ? "text-burnt" : "text-ink/15",
+        half ? "text-burnt" : fill > 0.5 ? "text-burnt" : "text-ink/15",
       )}
     >
       <defs>
         <linearGradient id={`star-${fill}-${half ? "h" : "f"}`}>
           <stop offset={`${Math.max(0, Math.min(100, fill * 100))}%`} stopColor="currentColor" />
-          <stop offset={`${Math.max(0, Math.min(100, fill * 100))}%`} stopColor="rgb(41 48 29 / 0.15)" />
+          <stop
+            offset={`${Math.max(0, Math.min(100, fill * 100))}%`}
+            style={{ stopColor: "var(--color-ink)", stopOpacity: 0.15 }}
+          />
         </linearGradient>
       </defs>
       <path d={path} fill={`url(#star-${fill}-${half ? "h" : "f"})`} />
@@ -60,7 +63,7 @@ export function Rating({
         className={cn(
           "tabular-nums",
           size === "sm" ? "text-[0.6875rem]" : "text-xs",
-          tone === "inverted" ? "text-ash-800/70" : "text-ink/60",
+          tone === "inverted" ? "text-ink/70" : "text-ink/60",
         )}
       >
         {value.toFixed(1)}

@@ -3,7 +3,7 @@ import { CartPage } from "@/components/cart/CartPage";
 
 export const metadata: Metadata = {
   title: "Your Bag",
-  description: "Review the pieces in your AllPatels bag before checking out.",
+  description: "Review the pieces in your AllPastels bag before checking out.",
   robots: { index: false, follow: true },
 };
 

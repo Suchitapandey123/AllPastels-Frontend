@@ -35,8 +35,8 @@ interface ParallaxImageProps {
 
 const OVERLAY_STYLES: Record<NonNullable<ParallaxImageProps["overlay"]>, string> = {
   none: "",
-  bottom: "bg-gradient-to-t from-ash-800/70 via-ash-800/15 to-transparent",
-  full: "bg-gradient-to-t from-ash-800/80 via-ash-800/25 to-ash-800/10",
+  bottom: "bg-gradient-to-t from-ash-100/70 via-ash-100/15 to-transparent",
+  full: "bg-gradient-to-t from-ash-100/80 via-ash-100/25 to-ash-100/10",
 };
 
 export function ParallaxImage({
@@ -94,7 +94,7 @@ export function ParallaxImage({
   return (
     <div
       ref={frameRef}
-      className={cn("relative overflow-hidden bg-ash-100", className)}
+      className={cn("relative overflow-hidden bg-ash-800", className)}
       style={{ aspectRatio: `${ratio.width} / ${ratio.height}` }}
     >
       <Image

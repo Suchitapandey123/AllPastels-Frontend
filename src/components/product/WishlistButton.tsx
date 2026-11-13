@@ -46,7 +46,7 @@ export function WishlistButton({
       }
       className={cn(
         "group/wish flex items-center justify-center rounded-full backdrop-blur-sm transition-all duration-500",
-        "bg-floral-400/85 hover:bg-floral-400 active:scale-95",
+        "bg-floral/85 hover:bg-floral active:scale-95",
         size === "sm" ? "h-8 w-8" : "h-10 w-10",
         className,
       )}

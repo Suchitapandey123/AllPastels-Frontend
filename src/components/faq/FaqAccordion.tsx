@@ -117,7 +117,7 @@ const GROUPS: { id: string; title: string; items: FaqItem[] }[] = [
         id: "gifting-note",
         question: "Can I add a personal note?",
         answer:
-          "Yes. Add your message at checkout and we will write it by hand on an AllPatels card. Let us know in your message if you would prefer us to leave the price off.",
+          "Yes. Add your message at checkout and we will write it by hand on an AllPastels card. Let us know in your message if you would prefer us to leave the price off.",
       },
     ],
   },

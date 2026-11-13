@@ -1,5 +1,6 @@
-import { products } from "@/data/products";
 import type { CategoryId, Product } from "@/lib/types";
+import { toProduct } from "@/lib/product-adapter";
+import { getAllProducts as apiGetAllProducts, getProductById as apiGetProductById } from "@/api";
 
 /**
  * Read-side helpers over the mock catalogue.
@@ -94,50 +95,49 @@ export function queryProducts(items: Product[], filters: FilterState = {}): Prod
   return sortProducts(filterProducts(items, filters), filters.sort);
 }
 
-export function getAllProducts(): Product[] {
-  return products;
+export function getAllProducts(items: Product[] = []): Product[] {
+  return items;
 }
 
-export function getProductBySlug(slug: string): Product | undefined {
-  return products.find((product) => product.slug === slug);
+export function getProductBySlug(items: Product[], slug: string): Product | undefined {
+  return items.find((product) => product.slug === slug || product.id === slug);
 }
 
-export function getProductsByCategory(category: CategoryId): Product[] {
-  return products.filter((product) => product.category === category);
+export function getProductsByCategory(items: Product[], category: CategoryId): Product[] {
+  return items.filter((product) => product.category === category);
 }
 
-export function getProductsByCollection(collectionSlug: string): Product[] {
-  return products.filter((product) => product.collections.includes(collectionSlug));
+export function getProductsByCollection(items: Product[], collectionSlug: string): Product[] {
+  return items.filter((product) => product.collections.includes(collectionSlug));
 }
 
-export function getProductsByMood(mood: string): Product[] {
-  return products.filter((product) => product.moods.includes(mood as never));
+export function getProductsByMood(items: Product[], mood: string): Product[] {
+  return items.filter((product) => product.moods.includes(mood as never));
 }
 
-export function getNewArrivals(): Product[] {
+export function getNewArrivals(items: Product[]): Product[] {
   return sortProducts(
-    products.filter((product) => product.isNew),
+    items.filter((product) => product.isNew),
     "newest",
   );
 }
 
-export function getBestsellers(): Product[] {
-  return sortProducts(products.filter((product) => product.isBestseller), "featured");
+export function getBestsellers(items: Product[]): Product[] {
+  return sortProducts(items.filter((product) => product.isBestseller), "featured");
 }
 
-export function getOnSale(): Product[] {
+export function getOnSale(items: Product[]): Product[] {
   return sortProducts(
-    products.filter((product) => typeof product.compareAtPrice === "number"),
+    items.filter((product) => typeof product.compareAtPrice === "number"),
     "featured",
   );
 }
 
-export function getRelatedProducts(product: Product, limit = 4): Product[] {
-  return products
-    .filter((candidate) => candidate.id !== product.id)
+export function getRelatedProducts(product: Product, items: Product[] = [], limit = 4): Product[] {
+  const candidates = (items.length ? items : []).filter((candidate) => candidate.id !== product.id);
+  return candidates
     .map((candidate) => ({
       candidate,
-      // Rank by shared mood, then shared collection, then shared category.
       score:
         candidate.moods.filter((mood) => product.moods.includes(mood)).length * 3 +
         candidate.collections.filter((slug) => product.collections.includes(slug)).length * 2 +
@@ -148,8 +148,28 @@ export function getRelatedProducts(product: Product, limit = 4): Product[] {
     .map((entry) => entry.candidate);
 }
 
-export function searchProducts(term: string): Product[] {
+export function searchProducts(items: Product[], term: string): Product[] {
   const trimmed = term.trim();
   if (!trimmed) return [];
-  return queryProducts(products, { search: trimmed });
+  return queryProducts(items, { search: trimmed });
+}
+
+/* ------------------------------------------------------------------ */
+/* Async loaders over the real backend product API                     */
+/* ------------------------------------------------------------------ */
+
+export async function loadProducts(): Promise<
+  { ok: true; products: Product[] } | { ok: false; error: string }
+> {
+  const result = await apiGetAllProducts();
+  if (!result.ok) return { ok: false, error: result.error };
+  return { ok: true, products: result.products.map(toProduct) };
+}
+
+export async function loadProductById(
+  id: string,
+): Promise<{ ok: true; product: Product } | { ok: false; error: string; notFound?: boolean }> {
+  const result = await apiGetProductById(id);
+  if (!result.ok) return { ok: false, error: result.error, notFound: result.notFound };
+  return { ok: true, product: toProduct(result.product) };
 }

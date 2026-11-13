@@ -8,13 +8,13 @@ import { FaqAccordion } from "@/components/faq/FaqAccordion";
 export const metadata: Metadata = {
   title: "Frequently Asked Questions",
   description:
-    "Answers about AllPatels shipping, returns, sizing, fabric care, gifting and tracking your order.",
+    "Answers about AllPastels shipping, returns, sizing, fabric care, gifting and tracking your order.",
 };
 
 export default function FaqPage() {
   return (
     <>
-      <section className="border-b border-line bg-ash-50">
+      <section className="border-b border-line bg-surface">
         <Container>
           <div className="py-14 sm:py-20">
             <Reveal variant="up">
@@ -41,9 +41,9 @@ export default function FaqPage() {
           </div>
 
           <aside className="lg:sticky lg:top-28 lg:self-start">
-            <div className="bg-ash-400 p-7">
-              <h2 className="text-xl text-ash-800">Still need help?</h2>
-              <p className="ap-body mt-3 text-sm text-ash-800/75">
+            <div className="bg-ash p-7">
+              <h2 className="text-xl text-ink">Still need help?</h2>
+              <p className="ap-body mt-3 text-sm text-ink/75">
                 Our team replies to every message within one working day — usually
                 much sooner.
               </p>
@@ -52,10 +52,10 @@ export default function FaqPage() {
                   Contact us
                 </Button>
                 <a
-                  href="mailto:care@allpatels.com"
-                  className="ap-eyebrow border border-ash-800/30 px-6 py-3 text-center text-ash-800 transition-colors hover:border-ash-800"
+                  href="mailto:care@allpastels.com"
+                  className="ap-eyebrow border border-ash-100/30 px-6 py-3 text-center text-ink transition-colors hover:border-ash-100"
                 >
-                  care@allpatels.com
+                  care@allpastels.com
                 </a>
               </div>
             </div>

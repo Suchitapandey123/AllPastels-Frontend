@@ -38,7 +38,7 @@ export function ProductGrid({
 }: ProductGridProps) {
   if (products.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-6 border border-dashed border-line bg-ash-50 px-6 py-20 text-center">
+      <div className="flex flex-col items-center gap-6 border border-dashed border-line bg-surface px-6 py-20 text-center">
         <p className="max-w-sm text-lg text-ink/70">{emptyMessage}</p>
         <Button href="/shop" variant="outline" size="sm" withArrow>
           Browse everything

@@ -3,13 +3,13 @@ import { ProductGrid } from "@/components/product/ProductGrid";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/animations/Reveal";
-import { getAllProducts, queryProducts } from "@/lib/catalog";
+import { loadProducts, queryProducts } from "@/lib/catalog";
 import { buildFilterState } from "@/lib/search-params";
 import { pluralize } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Search",
-  description: "Search the AllPatels collection by name, category, colour or occasion.",
+  description: "Search the AllPastels collection by name, category, colour or occasion.",
   // Search result pages have no standalone value in an index.
   robots: { index: false, follow: true },
 };
@@ -23,9 +23,11 @@ export default async function SearchPage({
   const rawQuery = params.q;
   const term = (Array.isArray(rawQuery) ? rawQuery[0] : rawQuery)?.trim() ?? "";
 
-  const products = term
-    ? queryProducts(getAllProducts(), buildFilterState(params))
-    : [];
+  const result = term ? await loadProducts() : null;
+  const products =
+    term && result?.ok
+      ? queryProducts(result.products, buildFilterState(params))
+      : [];
 
   // No search submitted yet — prompt rather than showing an empty grid.
   if (!term) {
@@ -50,7 +52,7 @@ export default async function SearchPage({
 
   return (
     <>
-      <section className="border-b border-line bg-ash-50">
+      <section className="border-b border-line bg-surface">
         <Container>
           <div className="py-12 sm:py-16">
             <Reveal variant="up">
@@ -76,7 +78,7 @@ export default async function SearchPage({
         {products.length > 0 ? (
           <ProductGrid products={products} showQuickAdd showRating />
         ) : (
-          <div className="flex flex-col items-center gap-6 border border-dashed border-line bg-ash-50 px-6 py-20 text-center">
+          <div className="flex flex-col items-center gap-6 border border-dashed border-line bg-surface px-6 py-20 text-center">
             <p className="max-w-sm text-lg text-ink/70">
               We could not find anything matching &ldquo;{term}&rdquo;. Try a
               broader word, or browse by category instead.

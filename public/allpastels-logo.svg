@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="56" viewBox="0 0 320 56" role="img" aria-label="AllPastels">
+  <rect width="320" height="56" fill="#29301d"/>
+  <text x="28" y="37" font-family="Georgia, 'Times New Roman', serif" font-size="28" fill="#fff8ef" letter-spacing="1">AllPastels</text>
+  <circle cx="280" cy="28" r="14" fill="none" stroke="#dc7954" stroke-width="2"/>
+  <circle cx="280" cy="28" r="4" fill="#dc7954"/>
+</svg>

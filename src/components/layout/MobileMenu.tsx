@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { navLinks } from "@/data/categories";
+import { useAuth } from "@/components/store/AuthProvider";
 import { useStore } from "@/components/store/StoreProvider";
-import { ArrowRightIcon, CloseIcon, HeartIcon } from "@/components/ui/icons";
+import { ArrowRightIcon, CloseIcon, HeartIcon, UserIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
 
 /**
@@ -16,7 +17,7 @@ import { cn } from "@/lib/utils";
  */
 
 const secondaryLinks = [
-  { label: "About AllPatels", href: "/about" },
+  { label: "About AllPastels", href: "/about" },
   { label: "Contact Us", href: "/contact" },
   { label: "Frequently Asked Questions", href: "/faq" },
   { label: "Track Order", href: "/faq#tracking" },
@@ -26,6 +27,7 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
   const panelRef = useRef<HTMLDivElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const { wishlist } = useStore();
+  const { session } = useAuth();
 
   // Move focus into the drawer when it opens, and return it on close.
   useEffect(() => {
@@ -42,7 +44,7 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
       {/* Scrim */}
       <button
         type="button"
-        className="absolute inset-0 h-full w-full animate-[ap-fade_300ms_ease-out] bg-ash-800/50 backdrop-blur-[2px]"
+        className="absolute inset-0 h-full w-full animate-[ap-fade_300ms_ease-out] bg-ash-100/50 backdrop-blur-[2px]"
         onClick={onClose}
         aria-label="Close menu"
         tabIndex={-1}
@@ -53,12 +55,12 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
         role="dialog"
         aria-modal="true"
         aria-label="Navigation"
-        className="ap-anim-slide-left absolute inset-y-0 left-0 flex w-[86%] max-w-sm flex-col overflow-y-auto bg-floral-400 shadow-2xl"
+        className="ap-anim-slide-left absolute inset-y-0 left-0 flex w-[86%] max-w-sm flex-col overflow-y-auto bg-floral shadow-2xl"
       >
         <div className="flex items-center justify-between border-b border-line px-5 py-4">
           <span className="font-display text-lg tracking-[0.16em]">
             <span className="text-ink">ALL</span>
-            <span className="text-burnt">PATELS</span>
+            <span className="text-burnt">PASTELS</span>
           </span>
           <button
             ref={closeRef}
@@ -89,9 +91,20 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
           </ul>
 
           <Link
-            href="/wishlist"
+            href="/account"
             onClick={onClose}
             className="mt-8 flex items-center gap-3 text-ink"
+          >
+            <UserIcon className="h-5 w-5" />
+            <span className="ap-eyebrow">
+              {session ? `Account · ${session.name.split(/\s+/)[0]}` : "Sign in / Join"}
+            </span>
+          </Link>
+
+          <Link
+            href="/wishlist"
+            onClick={onClose}
+            className="mt-5 flex items-center gap-3 text-ink"
           >
             <HeartIcon className="h-5 w-5" filled={wishlist.length > 0} />
             <span className="ap-eyebrow">
@@ -100,7 +113,7 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
           </Link>
         </nav>
 
-        <div className="border-t border-line bg-ash-50 px-5 py-5">
+        <div className="border-t border-line bg-surface px-5 py-5">
           <p className="ap-eyebrow mb-3 text-ink/40">Help</p>
           <ul className="flex flex-col gap-2.5">
             {secondaryLinks.map((link) => (
@@ -120,8 +133,8 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
         <div className={cn("px-5 py-5")}>
           <p className="ap-body text-xs text-ink/60">
             Questions? Write to{" "}
-            <a href="mailto:care@allpatels.com" className="text-burnt underline underline-offset-4">
-              care@allpatels.com
+            <a href="mailto:care@allpastels.com" className="text-burnt underline underline-offset-4">
+              care@allpastels.com
             </a>
           </p>
         </div>

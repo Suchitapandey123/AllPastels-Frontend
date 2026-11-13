@@ -3,7 +3,7 @@ import { Reveal } from "@/components/animations/Reveal";
 import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Section } from "@/components/ui/Section";
-import { getBestsellers } from "@/lib/catalog";
+import { loadProducts, getBestsellers } from "@/lib/catalog";
 
 /**
  * Bestsellers — the most-loved pieces, on the lightest surface colour.
@@ -13,8 +13,9 @@ import { getBestsellers } from "@/lib/catalog";
  * the cheapest way to make a long page feel art-directed.
  */
 
-export function Bestsellers() {
-  const products = getBestsellers().slice(0, 8);
+export async function Bestsellers() {
+  const result = await loadProducts();
+  const products = result.ok ? getBestsellers(result.products).slice(0, 8) : [];
 
   return (
     <Section space="default" tone="surface">

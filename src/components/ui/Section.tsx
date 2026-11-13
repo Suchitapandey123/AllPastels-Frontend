@@ -13,12 +13,12 @@ import { cn } from "@/lib/utils";
 type Tone = "canvas" | "surface" | "ash" | "cotton" | "burnt" | "ink";
 
 const TONES: Record<Tone, string> = {
-  canvas: "bg-floral-400",
-  surface: "bg-ash-50",
-  ash: "bg-ash-400",
-  cotton: "bg-cotton-400",
-  burnt: "bg-burnt-400",
-  ink: "bg-ash-800",
+  canvas: "bg-floral",
+  surface: "bg-surface",
+  ash: "bg-ash",
+  cotton: "bg-cotton",
+  burnt: "bg-burnt",
+  ink: "bg-ash-100",
 };
 
 interface SectionProps {

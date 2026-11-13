@@ -15,17 +15,17 @@ type Size = "sm" | "md" | "lg";
 const VARIANTS: Record<Variant, string> = {
   /** Burnt Peach — the one true call to action colour. */
   primary:
-    "bg-burnt text-floral-50 border border-burnt hover:bg-burnt-500 hover:border-burnt-500 active:bg-burnt-600",
+    "bg-burnt text-floral-900 border border-burnt hover:bg-burnt-400 hover:border-burnt-400 active:bg-burnt-300",
   /** Ash Grey — the quiet secondary action. */
   secondary:
-    "bg-ash text-ash-800 border border-ash hover:bg-ash-300 active:bg-ash-400",
+    "bg-ash text-ink border border-ash hover:bg-ash-600 active:bg-ash",
   /** Transparent with a hairline border. */
   outline:
-    "bg-transparent text-ink border border-line hover:border-ash-800 hover:bg-ash-50",
+    "bg-transparent text-ink border border-line hover:border-ash-100 hover:bg-surface",
   /** Text-only, for tertiary links. */
   ghost: "bg-transparent text-ink border border-transparent hover:text-burnt",
   /** For use on dark or photographic panels. */
-  light: "bg-floral-400 text-ash-800 border border-floral-400 hover:bg-cotton-400 hover:border-cotton-400",
+  light: "bg-floral text-ink border border-floral hover:bg-cotton hover:border-cotton",
 };
 
 const SIZES: Record<Size, string> = {
@@ -44,7 +44,7 @@ interface BaseProps {
   variant?: Variant;
   size?: Size;
   className?: string;
-  /** Optional trailing arrow — a recurring AllPatels motif. */
+  /** Optional trailing arrow — a recurring AllPastels motif. */
   withArrow?: boolean;
 }
 

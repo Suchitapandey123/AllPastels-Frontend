@@ -30,18 +30,18 @@ export function Newsletter() {
   };
 
   return (
-    <div className="border-b border-line bg-ash-400">
+    <div className="border-b border-line bg-ash">
       <div className="mx-auto w-full max-w-[1400px] px-5 py-16 sm:px-8 sm:py-20 lg:px-12">
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
           <div>
-            <p className="ap-eyebrow mb-4 flex items-center gap-3 text-ash-800/70">
-              <span aria-hidden="true" className="h-px w-8 bg-ash-800/40" />
+            <p className="ap-eyebrow mb-4 flex items-center gap-3 text-ink/70">
+              <span aria-hidden="true" className="h-px w-8 bg-ash-100/40" />
               Newsletter
             </p>
-            <h2 className="text-[clamp(2rem,4.5vw,3.25rem)] text-ash-800">
+            <h2 className="text-[clamp(2rem,4.5vw,3.25rem)] text-ink">
               Stay in the loop.
             </h2>
-            <p className="ap-body mt-4 max-w-md text-ash-800/75">
+            <p className="ap-body mt-4 max-w-md text-ink/75">
               Be the first to discover new collections, stories and special offers.
             </p>
           </div>
@@ -50,7 +50,7 @@ export function Newsletter() {
             {status === "done" ? (
               <p
                 role="status"
-                className="flex items-center gap-3 border border-ash-800/20 bg-floral-400/60 px-5 py-5 text-ash-800"
+                className="flex items-center gap-3 border border-ash-100/20 bg-floral/60 px-5 py-5 text-ink"
               >
                 <CheckIcon className="h-5 w-5 shrink-0" />
                 <span className="text-sm">
@@ -67,7 +67,7 @@ export function Newsletter() {
                   className={
                     status === "error"
                       ? "flex flex-col gap-3 sm:flex-row sm:items-center sm:border-b sm:border-burnt sm:pb-3"
-                      : "flex flex-col gap-3 sm:flex-row sm:items-center sm:border-b sm:border-ash-800/25 sm:pb-3"
+                      : "flex flex-col gap-3 sm:flex-row sm:items-center sm:border-b sm:border-ash-100/25 sm:pb-3"
                   }
                 >
                   <input
@@ -79,16 +79,16 @@ export function Newsletter() {
                       setEmail(event.target.value);
                       if (status === "error") setStatus("idle");
                     }}
-                    placeholder="Your email address"
+                    placeholder="Your email address…"
                     autoComplete="email"
                     aria-invalid={status === "error"}
                     aria-describedby={status === "error" ? "newsletter-error" : undefined}
-                    className="w-full flex-1 bg-transparent py-2 text-base text-ash-800 outline-none placeholder:text-ash-800/45"
+                    className="w-full flex-1 bg-transparent py-2 text-base text-ink outline-none placeholder:text-ink/45"
                   />
 
                   <button
                     type="submit"
-                    className="group ap-eyebrow inline-flex shrink-0 items-center gap-2 self-start bg-ash-800 px-6 py-3.5 text-floral-50 transition-colors duration-500 hover:bg-burnt sm:self-auto"
+                    className="group ap-eyebrow inline-flex shrink-0 items-center gap-2 self-start bg-ash-100 px-6 py-3.5 text-floral-900 transition-colors duration-500 hover:bg-burnt sm:self-auto"
                   >
                     Subscribe
                     <ArrowRightIcon className="h-3.5 w-3.5 transition-transform duration-500 group-hover:translate-x-1" />
@@ -96,12 +96,12 @@ export function Newsletter() {
                 </div>
 
                 {status === "error" && (
-                  <p id="newsletter-error" role="alert" className="ap-body mt-3 text-xs text-burnt-700">
+                  <p id="newsletter-error" role="alert" className="ap-body mt-3 text-xs text-burnt-200">
                     Please enter a valid email address so we can reach you.
                   </p>
                 )}
 
-                <p className="ap-body mt-4 text-xs text-ash-800/55">
+                <p className="ap-body mt-4 text-xs text-ink/55">
                   By subscribing you agree to our privacy policy. Unsubscribe any time.
                 </p>
               </form>

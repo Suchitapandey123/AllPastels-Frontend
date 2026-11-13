@@ -4,7 +4,7 @@ import { createCategoryPage } from "@/lib/category-page";
 export const metadata: Metadata = {
   title: "Women",
   description:
-    "Shop AllPatels women — fluid dresses, soft tailoring, knitwear and layers in linen, cotton, silk and merino.",
+    "Shop AllPastels women — fluid dresses, soft tailoring, knitwear and layers in linen, cotton, silk and merino.",
 };
 
 export default createCategoryPage("women");
